@@ -17,7 +17,7 @@ RUN npm install
 COPY . .
 
 # Expose the backend port
-EXPOSE 3000
+EXPOSE 8080
 
 # Set NODE_ENV to production if needed
 ENV NODE_ENV=production

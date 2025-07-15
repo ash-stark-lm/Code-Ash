@@ -29,7 +29,7 @@ const initializeConnection = async () => {
     await Promise.all([redisClient.connect(), dbConnection()])
     console.log('Connected to redis and mongoDB')
 
-    app.listen(process.env.PORT, () => {
+    app.listen(process.env.PORT || 3000, () => {
       console.log(`Server started on port ${process.env.PORT}`)
     })
   } catch (error) {
