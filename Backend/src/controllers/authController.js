@@ -18,7 +18,12 @@ const registerUser = async (req, res) => {
 
     //jwt token
     const token = await user.getJWT()
-    res.cookie('token', token, { maxAge: 60 * 60 * 1000 })
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'None',
+      maxAge: 60 * 60 * 1000, // 1 hour
+    })
 
     const reply = {
       firstName: user.firstName,
@@ -46,7 +51,12 @@ const registerAdmin = async (req, res) => {
     const user = await User.create(req.body)
 
     const token = await user.getJWT()
-    res.cookie('token', token, { maxAge: 60 * 60 * 1000 })
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'None',
+      maxAge: 60 * 60 * 1000, // 1 hour
+    })
 
     const reply = {
       firstName: user.firstName,
@@ -87,7 +97,12 @@ const login = async (req, res) => {
 
     //give user a new jwt token
     const token = await user.getJWT()
-    res.cookie('token', token, { maxAge: 60 * 60 * 1000 })
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'None',
+      maxAge: 60 * 60 * 1000, // 1 hour
+    })
 
     const reply = {
       firstName: user.firstName,
