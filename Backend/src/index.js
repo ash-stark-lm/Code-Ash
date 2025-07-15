@@ -10,6 +10,7 @@ import cors from 'cors'
 import aiRouter from './routes/chatRouter.js'
 const app = express()
 
+const PORT = process.env.PORT || 3000
 app.use(
   cors({
     origin: process.env.CORS_ORIGIN,
@@ -32,8 +33,8 @@ const initializeConnection = async () => {
     await Promise.all([redisClient.connect(), dbConnection()])
     console.log('Connected to redis and mongoDB')
 
-    app.listen(process.env.PORT || 3000, () => {
-      console.log(`Server started on port ${process.env.PORT}`)
+    app.listen(PORT, () => {
+      console.log(`Server started on port ${PORT}`)
     })
   } catch (error) {
     console.log(error)
