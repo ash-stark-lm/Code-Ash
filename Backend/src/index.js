@@ -18,6 +18,9 @@ app.use(
 )
 app.use(express.json())
 app.use(cookieParser())
+app.get('/', (req, res) => {
+  res.send('✅ Backend is live!')
+})
 
 app.use('/auth', authRouter)
 app.use('/problem', problemRouter)
