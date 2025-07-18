@@ -15,7 +15,7 @@ const GoogleLoginButton = ({ onSuccess }) => {
   return (
     <motion.button
       onClick={() => login()}
-      className="w-full flex items-center justify-center gap-3 bg-white text-black font-semibold py-3 rounded-full shadow hover:opacity-90 transition"
+      className="w-full flex items-center justify-center gap-3 bg-black text-white font-semibold py-3 rounded-full shadow hover:opacity-90 transition cursor-pointer"
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
     >
