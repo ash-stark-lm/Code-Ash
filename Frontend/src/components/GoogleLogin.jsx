@@ -21,6 +21,7 @@ const GoogleLoginButton = ({ onSuccess }) => {
         size="large"
         logo_alignment="left"
         useOneTap={false}
+        ux_mode="redirect"
       />
     </motion.div>
   )
