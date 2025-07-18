@@ -2,7 +2,7 @@
 import React from 'react'
 import { useGoogleLogin } from '@react-oauth/google'
 import { motion } from 'framer-motion'
-
+import GoogleIcon from '../assets/google-icon.svg'
 const GoogleLoginButton = ({ onSuccess }) => {
   const login = useGoogleLogin({
     onSuccess: (tokenResponse) => {
@@ -14,17 +14,13 @@ const GoogleLoginButton = ({ onSuccess }) => {
 
   return (
     <motion.button
-      onClick={() => login()}
-      className="w-full flex items-center justify-center gap-3 bg-black text-white font-semibold py-3 rounded-full shadow hover:opacity-90 transition cursor-pointer"
+      onClick={login}
+      className="w-full flex items-center justify-center gap-3 bg-neutral-800 border border-neutral-700 text-white font-medium py-3 px-4 rounded-lg hover:bg-neutral-700 transition duration-150 ease-in-out"
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
     >
-      <img
-        src="https://developers.google.com/identity/images/g-logo.png"
-        alt="Google"
-        className="w-5 h-5"
-      />
-      Continue with Google
+      <img src={GoogleIcon} alt="Google icon" className="w-5 h-5" />
+      <span>Continue with Google</span>
     </motion.button>
   )
 }
