@@ -1,11 +1,10 @@
 @import 'tailwindcss';
 @plugin "daisyui";
-
-/* index.css */
-html {
-  scroll-behavior: smooth;
-
-  overscroll-behavior: none;
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
+body {
+  scroll-behavior: auto;
+  overflow: hidden;
+  height: 100%;
+}
+body {
+  overflow: auto;
 }

@@ -23,10 +23,6 @@ app.use(
 app.use(express.json())
 app.use(cookieParser())
 
-app.get('/ping', (req, res) => {
-  res.send('Main server route working ✅')
-})
-
 app.use('/auth', authRouter)
 app.use('/problem', problemRouter)
 app.use('/submission', submitRouter)

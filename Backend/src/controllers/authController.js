@@ -77,9 +77,7 @@ const registerAdmin = async (req, res) => {
 }
 
 const login = async (req, res) => {
-  console.log('Inside login')
   try {
-    console.log('Login attempt with body:', req.body)
     //first  emailId ->lowercase
     const { emailId, password } = req.body
     const normalizedEmail = emailId.toLowerCase()
@@ -121,7 +119,6 @@ const login = async (req, res) => {
       message: 'User Logged In Successfully',
     })
   } catch (error) {
-    console.log('Login error:', error.message)
     res.status(401).send({
       error: error.message,
     })
