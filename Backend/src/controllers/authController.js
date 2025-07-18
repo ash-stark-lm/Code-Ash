@@ -5,6 +5,7 @@ import partialValidUser from '../utils/partialValidateUser.js'
 import jwt from 'jsonwebtoken'
 import redisClient from '../config/redis.js'
 import Submission from '../models/submission.js'
+import { OAuth2Client } from 'google-auth-library'
 
 const registerUser = async (req, res) => {
   //first validate the data sent by user
@@ -76,7 +77,9 @@ const registerAdmin = async (req, res) => {
 }
 
 const login = async (req, res) => {
+  console.log('Inside login')
   try {
+    console.log('Login attempt with body:', req.body)
     //first  emailId ->lowercase
     const { emailId, password } = req.body
     const normalizedEmail = emailId.toLowerCase()
@@ -100,6 +103,7 @@ const login = async (req, res) => {
     res.cookie('token', token, {
       httpOnly: true,
       secure: true,
+
       sameSite: 'None',
       maxAge: 60 * 60 * 1000, // 1 hour
     })
@@ -117,9 +121,70 @@ const login = async (req, res) => {
       message: 'User Logged In Successfully',
     })
   } catch (error) {
+    console.log('Login error:', error.message)
     res.status(401).send({
       error: error.message,
     })
+  }
+}
+
+//google login
+// Initialize Google OAuth client
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID)
+
+const googleLogin = async (req, res) => {
+  const { token } = req.body
+
+  try {
+    if (!token) throw new Error('No token provided')
+
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    })
+
+    const payload = ticket.getPayload()
+    const { email, name, sub } = payload
+
+    let user = await User.findOne({ emailId: email.toLowerCase() })
+    const hashed_password = await Hashing('GOOGLE_AUTH_PASSWORD') // Placeholder password for Google Auth
+
+    // Create new user if not exists
+    if (!user) {
+      user = await User.create({
+        firstName: name,
+        emailId: email.toLowerCase(),
+        password: hashed_password,
+        role: 'user',
+        googleId: sub,
+      })
+    }
+
+    // Generate JWT
+    const jwtToken = await user.getJWT()
+
+    res.cookie('token', jwtToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'None',
+      maxAge: 60 * 60 * 1000, // 1 hour
+    })
+
+    const reply = {
+      firstName: user.firstName,
+      emailId: user.emailId,
+      _id: user._id,
+      role: user.role,
+    }
+
+    res.status(200).json({
+      user: reply,
+      success: true,
+      message: 'Google Login Successful',
+    })
+  } catch (error) {
+    console.error('Google login error:', error.message)
+    res.status(401).json({ error: 'Google Login Failed' })
   }
 }
 
@@ -222,4 +287,5 @@ export const userAuthController = {
   checkAuth,
   updateProfile,
   getProfile,
+  googleLogin,
 }

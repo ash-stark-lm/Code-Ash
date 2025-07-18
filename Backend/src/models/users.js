@@ -30,6 +30,11 @@ const userSchema = new Schema(
       lowercase: true,
       immutable: true,
     },
+    googleId: {
+      type: String,
+      default: null,
+      index: true,
+    },
 
     age: {
       type: Number,

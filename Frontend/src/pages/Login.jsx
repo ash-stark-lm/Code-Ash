@@ -9,6 +9,8 @@ import { EyeIcon, EyeOffIcon, LogIn, Terminal } from 'lucide-react'
 import { useDispatch, useSelector } from 'react-redux'
 import { loginUser } from '../authSlice.js'
 import LoadingOverlay from '../components/LoadingOverlay.jsx'
+import GoogleLoginButton from '../components/GoogleLogin.jsx'
+import { googleLogin } from '../authSlice.js'
 
 // Schema Validation
 const loginSchema = z.object({
@@ -140,15 +142,41 @@ const Login = () => {
             </motion.div>
 
             <motion.div variants={itemVariants} className="pt-2">
-              <motion.button
-                type="submit"
-                className="w-full bg-white text-black font-semibold py-3 rounded-lg hover:opacity-90 transition cursor-pointer"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                disabled={loading}
-              >
-                Log In
-              </motion.button>
+              <motion.div variants={itemVariants} className="pt-2 space-y-4">
+                <motion.button
+                  type="submit"
+                  className="w-full bg-white text-black font-semibold py-3 rounded-lg hover:opacity-90 transition cursor-pointer"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  disabled={loading}
+                >
+                  Log In
+                </motion.button>
+
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-neutral-700"></div>
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="bg-neutral-900 px-2 text-neutral-500">
+                      or
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex justify-center">
+                  <GoogleLoginButton
+                    onSuccess={({ credential }) => {
+                      dispatch(googleLogin(credential))
+                        .unwrap()
+                        .then(() => navigate('/'))
+                        .catch((err) => {
+                          console.error('Google login failed:', err)
+                        })
+                    }}
+                  />
+                </div>
+              </motion.div>
             </motion.div>
           </motion.form>
 

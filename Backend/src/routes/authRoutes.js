@@ -14,12 +14,15 @@ const {
   checkAuth,
   updateProfile,
   getProfile,
+  googleLogin,
 } = userAuthController
 
 authRouter.post('/user/register', registerUser)
 authRouter.post('/admin/register', adminMiddleware, registerAdmin)
 authRouter.post('/login', login)
+authRouter.post('/google-login', googleLogin)
 authRouter.post('/logout', userAuthMiddleware, logout)
+
 //authRouter.post('/deleteProfile', userAuthMiddleware, logout)
 authRouter.get('/check-auth', userAuthMiddleware, checkAuth)
 authRouter.patch('/user/update', userAuthMiddleware, updateProfile)

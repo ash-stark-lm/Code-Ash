@@ -8,6 +8,8 @@ import { z } from 'zod'
 import { Eye, EyeOff, Terminal } from 'lucide-react'
 import { useDispatch, useSelector } from 'react-redux'
 import { registerUser } from '../authSlice'
+import GoogleLoginButton from '../components/GoogleLogin.jsx'
+import { googleLogin } from '../authSlice.js'
 
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{8,}$/
 
@@ -259,6 +261,30 @@ const SignUp = () => {
               >
                 Create Account
               </motion.button>
+
+              <div className="relative mt-2 mb-2">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-neutral-700"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="bg-neutral-900 px-2 text-neutral-500">
+                    or
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex justify-center">
+                <GoogleLoginButton
+                  onSuccess={({ credential }) => {
+                    dispatch(googleLogin(credential))
+                      .unwrap()
+                      .then(() => navigate('/'))
+                      .catch((err) => {
+                        console.error('Google login failed:', err)
+                      })
+                  }}
+                />
+              </div>
             </motion.div>
           </motion.form>
 

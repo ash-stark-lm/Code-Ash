@@ -8,17 +8,24 @@ import problemRouter from './routes/problemRoutes.js'
 import submitRouter from './routes/submitRoutes.js'
 import cors from 'cors'
 import aiRouter from './routes/chatRouter.js'
+
 const app = express()
 
 const PORT = process.env.PORT || 3000
+
 app.use(
   cors({
     origin: process.env.CORS_ORIGIN,
     credentials: true, // allow cookies / headers
   })
 )
+
 app.use(express.json())
 app.use(cookieParser())
+
+app.get('/ping', (req, res) => {
+  res.send('Main server route working ✅')
+})
 
 app.use('/auth', authRouter)
 app.use('/problem', problemRouter)
