@@ -16,8 +16,8 @@ RUN npm install
 # Copy rest of the backend code
 COPY . .
 
-# Expose the backend port
-EXPOSE 8080
+# Expose the backend port-8080 for railway
+EXPOSE 3000
 
 # Set NODE_ENV to production if needed
 ENV NODE_ENV=production
