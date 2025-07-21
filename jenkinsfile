@@ -1,0 +1,75 @@
+pipeline {
+    agent any
+
+    environment {
+        VITE_API_BASE_URL      = credentials('vite-api-url1')
+        PORT                   = credentials('port')
+        DB_CONNECT_KEY         = credentials('mongo-db-connect')
+        JWT_SECRET_KEY         = credentials('jwt-secret')
+        REDIS_CONNECT_PASSWORD = credentials('redis-connect-pswd')
+        REDIS_HOST             = credentials('redis-host')
+        REDIS_PORT             = credentials('redis-port')
+        RAPID_API_KEY          = credentials('rapid_api_key')
+        RAPID_API_HOST         = credentials('rapid-api-host')
+        GEMINI_API_KEY         = credentials('gemini-api')
+        CORS_ORIGIN_TEST       = credentials('cors-origin-test')
+        GOOGLE_CLIENT_ID       = credentials('google-client-id')
+    }
+
+    stages {
+        stage('Clone Repo') {
+            steps {
+                echo ' Cloning GitHub repo...'
+                git url: 'https://github.com/ash-stark-lm/Code-Ash.git', branch: 'main'
+            }
+        }
+
+        stage('Write Backend .env File') {
+            steps {
+                dir('Backend') {
+                    echo 'Writing .env for backend...'
+                    writeFile file: '.env', text: """\
+PORT=$PORT
+DB_CONNECT_KEY=$DB_CONNECT_KEY
+JWT_SECRET_KEY=$JWT_SECRET_KEY
+REDIS_CONNECT_PASSWORD=$REDIS_CONNECT_PASSWORD
+REDIS_HOST=$REDIS_HOST
+REDIS_PORT=$REDIS_PORT
+RAPID_API_KEY=$RAPID_API_KEY
+RAPID_API_HOST=$RAPID_API_HOST
+GEMINI_API_KEY=$GEMINI_API_KEY
+CORS_ORIGIN_TEST=$CORS_ORIGIN_TEST
+GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID
+"""
+                }
+            }
+        }
+
+        stage('Build Frontend Image') {
+            steps {
+                dir('Frontend') {
+                    echo "Building the frontend image."
+                    sh "docker build --build-arg VITE_API_BASE_URL=$VITE_API_BASE_URL -t frontend-app:latest ."
+                    echo 'Frontend image built.'
+                }
+            }
+        }
+
+        stage('Build Backend Image') {
+            steps {
+                dir('Backend') {
+                    echo ' Building backend image...'
+                    sh "docker build -t backend-app:latest ."
+                    echo 'Backend image built.'
+                }
+            }
+        }
+        
+        stage('Deploy using Docker Compose') {
+            steps {
+                echo 'Launching services with docker-compose...'
+                sh 'docker-compose up -d'
+            }
+        }
+    }
+}
