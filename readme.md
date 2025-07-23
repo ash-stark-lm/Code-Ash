@@ -140,7 +140,7 @@ Backend/
 ├── src/
 │   ├── config/           # db.js, redis.js
 │   ├── controllers/      # authController, solveDoubt.js, userSubmission, solveDoubt
-│   ├── middleware/       # JWT, role-based guards
+│   ├── middleware/       # userAuthMiddleware, adminMiddleware
 │   ├── models/           # User, Problem, Submission
 │   ├── routes/           # authRoutes.js, problemRoutes.js, submitRoutes.js, chatRouter.js
 │   ├── utils/            # hashPassword, partialValidator, validator, problemsUtils, referenceSolution, validator
