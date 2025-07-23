@@ -113,7 +113,7 @@ CodeAsh was built to refine my MERN stack skills and explore the end-to-end desi
 - REST API with:
   - `/auth`, `/problems`, `/submit`, `/ai`
 - Auth with JWT + Redis for logout token storage
-- Controllers: `authController`, `userSubmissionController`, `solveDoubt.js`
+- Controllers: `authController`, `problemController`, `solveDoubt`, `userSubmission`
 
 ### 🔹 Database
 - **MongoDB**
@@ -139,11 +139,11 @@ CodeAsh was built to refine my MERN stack skills and explore the end-to-end desi
 Backend/
 ├── src/
 │   ├── config/           # db.js, redis.js
-│   ├── controllers/      # authController, solveDoubt.js, userSubmissionController
+│   ├── controllers/      # authController, solveDoubt.js, userSubmission, solveDoubt
 │   ├── middleware/       # JWT, role-based guards
 │   ├── models/           # User, Problem, Submission
-│   ├── routes/           # authRoutes.js, problemRoutes.js, submitRoutes.js
-│   ├── utils/            # problemUtils.js, validation, hashing
+│   ├── routes/           # authRoutes.js, problemRoutes.js, submitRoutes.js, chatRouter.js
+│   ├── utils/            # hashPassword, partialValidator, validator, problemsUtils, referenceSolution, validator
 │   └── index.js          # App entry point
 ├── .env
 ├── Dockerfile
