@@ -1,250 +1,213 @@
-CodeAsh: A Modern Full-Stack Coding Platform
-🧠 Problem Statement & Vision
-I built CodeAsh to sharpen my MERN stack skills and understand how real-world full-stack projects are designed, architected, and deployed. Existing platforms like LeetCode or HackerRank often lack visualization and openness. CodeAsh aims to fill that gap by offering:
-✨ Visualizer support for algorithms
-
-🤖 AI Assistant (Herby) that can directly access your code and debug it
-
-🔐 JWT-auth based secure login system with Redis-based token invalidation
-
-🆓 Zero-cost access to support community learning
-
-This project is fully open-source, developer-friendly, and designed for extensibility.
-
-🚀 Features
-🔐 User Authentication (Email/Password + Google OAuth)
-
-JWT-based authentication with auto-login support if token is valid
-
-Redis used to store blacklisted tokens on logout, with automatic expiry
-
-📚 Problem Listing & Filtering
-
-Pagination and lazy loading
-
-Filter by difficulty (Easy, Medium, Hard)
-
-Filter by tags (e.g., Array, Tree, Graph)
-
-🧑‍💻 Editor Features
-
-Monaco Editor with:
-
-Adjustable font size
-
-Language selector (C++, Python, JS, etc.)
-
-Custom themes
-
-💡 Visualizer Section
-
-Fully animated with Framer Motion
-
-Smooth transitions via Lenis for scrolling
-
-Algorithms currently supported:
-
-Sorting: Selection Sort, Bubble Sort, Insertion Sort, Merge Sort
-
-Searching: Binary Search, Linear Search
-
-Stack, Queue
-
-Linked List: Singly & Doubly
-
-Binary Tree: Preorder, Inorder, Postorder
-
-Heap: Max Heap, Min Heap
-
-Graph: DFS, BFS, Flood-Fill
-
-More visualizers to be added soon
-
-🚦 Code Submission & Evaluation
-
-Judge0 API integration via RapidAPI
-
-Submission stored in DB as 'pending' → results updated after polling tokens
-
-Verdicts shown: AC, WA, TLE, Runtime Error
-
-📝 Submission Viewer
-
-Framer Motion transitions
-
-Read-only mode with green/red border for Accepted/Rejected
-
-"Exit Submission View" button animation
-
-📈 User Profile Dashboard
-
-View total problems solved
-
-Track number of submissions
-
-Charts showing progress
-
-🤖 Herby AI Assistant
-
-No dropdowns — click-based actions:
-
-Debug my code
-
-Explain my code
-
-Generate test cases
-
-Herby automatically fetches current problem + user code
-
-Calls OpenAI API to provide intelligent feedback
-
-👨‍🏫 Admin Panel
-
-Full CRUD for problem creation
-
-Add/edit title, statement, difficulty, tags, visible + hidden testcases
-
-Delete problems
-
-🔮 Future Additions
-
-Discussion/comments per problem
-
-Leaderboard
-
-Contest system
-
-Self-hosted judge
-
-🏗️ System Architecture (High-Level Design)
-
-Key Flow Summary:
-Authentication: User logs in → JWT issued → stored in localStorage → Redis used to blacklist token on logout
-
-Problem Solving: User selects a problem → Code written in Monaco → Run/Submit triggers backend call
-
-Code Execution:
-
-If "Run": executes on visible testcases
-
-If "Submit": executes on hidden testcases, updates DB
-
-AI Assistance: Click on Herby action → backend grabs code/problem → generates prompt → fetches answer from OpenAI
-
-Visualizer: Route-driven visualizers → rendered using Framer Motion + Lenis
-
-Admin CRUD: Admin panel allows problem management, tags, testcases etc.
-
-🔁 Technical Stack Workflow
-🔹 Frontend (React + Vite + TailwindCSS + Framer Motion + Lenis)
-Built with Vite for fast development
-
-Uses Framer Motion for page transitions, submission view animations
-
-Lenis ensures smooth page scrolling (visualizer/navigation)
-
-Redux Toolkit used for global state management
-
-Pages: Login, Signup, Problems, Editor, Profile, Admin Panel
-
-🔹 Backend (Node.js + Express.js)
-REST API built with Express
-
-Authentication:
-
-JWT-based with middleware to protect routes
-
-Redis used to store blacklisted JWTs on logout
-
-Submission Handling:
-
-/submit/:id route stores code, sends to Judge0
-
-submitBatch() and submitToken() in utils manage integration
-
-AI Agent:
-
-solveDoubt.js controller builds prompts using user code + problem
-
-Sends to OpenAI API → returns debug response
-
-🔹 Database: MongoDB
-Models:
-
-Users
-
-Problems (with visible & hidden testcases)
-
-Submissions (linked to user + problem)
-
-Stores submission results, timestamps, verdicts
-
-🔹 Cache Layer: Redis
-Used to block blacklisted JWT tokens on logout
-
-TTL applied to tokens to auto-clear expired ones
-
-🔹 Evaluation: Judge0 (via RapidAPI)
-Submissions sent in batch per testcase
-
-Token polling used to fetch final verdicts
-
-Stored in DB for profile/statistics
-
-🗂️ Code Structure
-📦 Backend (/Backend)
-Backend/
-├── src/
-│ ├── config/ # db.js, redis.js
-│ ├── controllers/ # authController, userSubmissionController, solveDoubt.js
-│ ├── middleware/ # admin/user auth middlewares
-│ ├── models/ # problems.js, submission.js, users.js
-│ ├── routes/ # authRoutes.js, problemRoutes.js, submitRoutes.js
-│ ├── utils/ # problemUtils.js, validators, hashing, etc.
-│ └── index.js # App entry point
-├── .env
-├── Dockerfile
-
-🎨 Frontend (/Frontend)
-Frontend/
-├── src/
-│ ├── components/
-│ │ ├── Admin/
-│ │ └── Visualizer/ # Algorithm animations
-│ ├── pages/ # Login, Signup, Problems, Editor, Admin
-│ ├── Routes/ # React Router setup
-│ ├── store/ # Redux store
-│ └── utils/ # axiosClient, authSlice, etc.
-├── .env
-├── Dockerfile
-
-📦 Deployment Guide
-🧪 Prerequisites
-Node.js, Docker, Railway Account
-
-📦 ENV Files
-.env files present in both Frontend/ and Backend/
-
-Must configure Judge0 keys, Mongo URI, JWT secret, etc.
-
-⚙️ Run Locally
-docker compose up --build
-
-🚀 Deploy to Railway
-Link Railway to both Frontend & Backend repos
-
-Set ENV variables correctly in Railway dashboard
-
-App will auto-build and deploy
-
-👤 Author
-Ashish Kumar
-MERN Stack Developer | Passionate about full-stack, algorithms, and developer tools
-Feel free to star ⭐ this repo or contribute!
+# 🚀 CodeAsh: A Modern Full-Stack Coding Platform
+
+## 🧠 Problem Statement & Vision
+
+CodeAsh was built to refine my MERN stack skills and explore the end-to-end design of real-world full-stack systems. Unlike traditional coding platforms, CodeAsh brings a modern, visual, and AI-assisted experience to users.
+
+> ✨ Key Differentiators:
+- 🔍 **Algorithm Visualizers** with animations
+- 🤖 **AI Assistant (Herby)** for smart debugging
+- 🔐 **Secure JWT Authentication** with Redis-based token management
+- 🆓 **Free & Open Source** to support community learning
+
+---
+
+## 🚦 Key Features
+
+### 🔐 Authentication
+- Email/password and Google OAuth login
+- JWT-based with auto-login on valid token
+- Logout invalidation via Redis (token blacklist + TTL)
+
+### 📚 Problem Browsing
+- Paginated & lazily loaded list
+- Filter by difficulty and tags (e.g., Array, Tree, Graph)
+
+### 🧑‍💻 Code Editor
+- Monaco Editor with:
+  - Font size control
+  - Theme toggle
+  - Language selector (C++, Python, JS, etc.)
+
+### 💡 Visualizer Section
+- Smooth animated transitions via **Framer Motion**
+- Supported algorithms:
+  - Sorting: Selection, Bubble, Insertion, Merge
+  - Searching: Linear, Binary
+  - Stack, Queue, Linked List (Singly, Doubly)
+  - Tree Traversals
+  - Heap (Min/Max)
+  - Graphs (DFS, BFS, Flood Fill)
+
+### ⚙️ Code Execution & Submission
+- Powered by **Judge0 API** (via RapidAPI)
+- Runs on testcases (visible/hidden)
+- Verdicts: ✅ AC, ❌ WA, ⌛ TLE, 💥 RE
+- Submissions saved and verdicts updated after polling
+
+### 📈 User Dashboard
+- Tracks:
+  - Problems solved
+  - Submissions made
+- Progress shown via charts
+
+### 🤖 Herby AI Assistant
+- Smart actions (click-based, no dropdowns):
+  - Debug my code
+  - Explain my code
+  - Generate test cases
+- Automatically fetches current problem + code
+- Powered by OpenAI API
+
+### 🧑‍🏫 Admin Panel
+- Full CRUD support for problems:
+  - Add/edit/delete problems
+  - Set difficulty, tags, visible/hidden testcases
+
+---
+
+## 🧬 System Architecture
 
 <details>
-  <summary>📷 Click to expand system design diagram</summary>
+  <summary>📷 Click to expand system design diagram. Understand the complete architecture.</summary>
 
-![System Diagram](./docs/diagram.png)
+  ![System Diagram](./docs/diagram.png)
 
 </details>
+
+### 🔁 Key Workflow Summary
+
+**Authentication:**
+- User logs in → JWT issued → Stored in localStorage
+- On logout → Token blacklisted in Redis with TTL
+
+**Code Submission Flow:**
+- User selects a problem → Code is typed in Monaco
+- "Run Code": evaluates on visible testcases
+- "Submit": runs on hidden testcases via Judge0 → stores results in DB
+
+**AI Assistant:**
+- User clicks action → Backend grabs code + problem
+- Prompt sent to OpenAI → Response shown on UI
+
+**Visualizer:**
+- Route-driven → Component loads animation for the selected algorithm
+
+**Admin Interface:**
+- Protected by middleware
+- Allows CRUD on problems, tags, and testcases
+
+---
+
+## 🧰 Tech Stack
+
+### 🔹 Frontend
+- **React + Vite + TailwindCSS**
+- **Framer Motion**: page transitions, animated editor
+- **Lenis**: smooth scrolling
+- **Redux Toolkit**: state management
+- Pages: Login, Signup, Editor, Profile, Admin Panel
+
+### 🔹 Backend
+- **Node.js + Express**
+- REST API with:
+  - `/auth`, `/problems`, `/submit`, `/ai`
+- Auth with JWT + Redis for logout token storage
+- Controllers: `authController`, `userSubmissionController`, `solveDoubt.js`
+
+### 🔹 Database
+- **MongoDB**
+- Models:
+  - `User`
+  - `Problem` (with visible/hidden testcases)
+  - `Submission` (linked to user + problem)
+
+### 🔹 Cache
+- **Redis** for JWT token invalidation
+
+### 🔹 Evaluation Engine
+- **Judge0 via RapidAPI**
+- Batch submission
+- Token polling → result updates
+
+---
+
+## 🗂️ Project Structure
+
+### 📦 Backend (`/Backend`)
+```
+Backend/
+├── src/
+│   ├── config/           # db.js, redis.js
+│   ├── controllers/      # authController, solveDoubt.js, userSubmissionController
+│   ├── middleware/       # JWT, role-based guards
+│   ├── models/           # User, Problem, Submission
+│   ├── routes/           # authRoutes.js, problemRoutes.js, submitRoutes.js
+│   ├── utils/            # problemUtils.js, validation, hashing
+│   └── index.js          # App entry point
+├── .env
+├── Dockerfile
+```
+
+### 🎨 Frontend (`/Frontend`)
+```
+Frontend/
+├── src/
+│   ├── components/       # Visualizers, Admin Panel, etc.
+│   ├── pages/            # Login, Signup, Problems, Editor
+│   ├── Routes/           # React Router setup
+│   ├── store/            # Redux store config
+│   └── utils/            # axios client, slices, etc.
+├── .env
+├── Dockerfile
+```
+
+---
+
+## ⚙️ Run Locally
+
+### 🧪 Prerequisites
+- Node.js
+- Docker
+- Railway account (for deployment)
+
+### 📦 Environment Variables
+`.env` files required in both `Frontend/` and `Backend/`:
+- Mongo URI
+- JWT secrets
+- Judge0 API keys
+- Redis config
+
+### 🔧 Build & Start
+```bash
+docker compose up --build
+```
+
+---
+
+## 🚀 Deployment (Railway)
+
+1. Connect Railway to both Frontend & Backend repos
+2. Add required ENV variables in Railway dashboard
+3. Auto-deploy from GitHub
+
+---
+
+## 👨‍💻 Author
+
+**Ashish Kumar**  
+_MERN Stack Developer | Passionate about algorithms & developer tools_
+
+📌 GitHub: [ash-stark-lm](https://github.com/ash-stark-lm)
+
+⭐ If you found this helpful, give the repo a star and feel free to contribute!
+
+---
+
+## 💬 Contributions
+
+Pull requests, issues, and feedback are welcome. Feel free to:
+- Add new visualizers
+- Improve UI/UX
+- Enhance Herby's capabilities
+- Suggest new features!
