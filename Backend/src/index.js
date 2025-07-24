@@ -9,13 +9,17 @@ import submitRouter from './routes/submitRoutes.js'
 import cors from 'cors'
 import aiRouter from './routes/chatRouter.js'
 
+import editorialRouter from './routes/editorialRoutes.js'
+
 const app = express()
 
 const PORT = process.env.PORT || 3000
 
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN || process.env.CORS_ORIGIN_TEST,
+    origin: [process.env.CORS_ORIGIN, process.env.CORS_ORIGIN_TEST].filter(
+      Boolean
+    ),
     credentials: true, // allow cookies / headers
   })
 )
@@ -27,6 +31,7 @@ app.use('/auth', authRouter)
 app.use('/problem', problemRouter)
 app.use('/submission', submitRouter)
 app.use('/herby', aiRouter)
+app.use('/editorial', editorialRouter)
 
 const initializeConnection = async () => {
   try {

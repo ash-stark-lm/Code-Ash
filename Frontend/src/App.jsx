@@ -40,9 +40,9 @@ export default function App() {
     return () => lenis.destroy()
   }, [])
 
-  // 🔁 Reset scroll on route change
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    const lenis = new Lenis()
+    lenis.scrollTo(0, { offset: 0, immediate: false })
   }, [location.pathname])
 
   if (loading) return <LoadingOverlay />

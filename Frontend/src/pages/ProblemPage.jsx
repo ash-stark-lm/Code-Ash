@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react'
 import { RotateCcw } from 'lucide-react'
 import Editor from '@monaco-editor/react'
 import axiosClient from '../utils/axiosClient'
-import { useParams } from 'react-router'
+import { useParams, useNavigate } from 'react-router'
 import SubmissionResult from '../components/SubmissionResult'
 import LoadingOverlay from '../components/LoadingOverlay'
 import SubmissionHistory from '../components/SubmissionHistory'
@@ -11,14 +11,11 @@ import RunResultPanel from '../components/RunResultPanel'
 import ChatWithAI from '../components/ChatWithAI'
 
 export default function ProblemPage() {
-  // Add this check at the start of your component
-
   const [problem, setProblem] = useState(null)
   const [selectedLang, setSelectedLang] = useState('c++')
   const [code, setCode] = useState('')
   const [fontSize, setFontSize] = useState(14)
-  const [fontDropdownOpen, setFontDropdownOpen] = useState(false)
-  const [langDropdownOpen, setLangDropdownOpen] = useState(false)
+  const [dropdownOpen, setDropdownOpen] = useState({ font: false, lang: false })
   const [selectedTestcase, setSelectedTestcase] = useState(0)
   const [activeTab, setActiveTab] = useState('Description')
   const [submissionResults, setSubmissionResults] = useState(null)
@@ -26,19 +23,23 @@ export default function ProblemPage() {
   const [submissionsList, setSubmissionsList] = useState([])
   const [runResults, setRunResults] = useState(null)
   const [running, setRunning] = useState(false)
-  const [viewingSubmission, setViewingSubmission] = useState(null) // { code, passed }
-
+  const [viewingSubmission, setViewingSubmission] = useState(null)
   const [isLoadingSubmissions, setIsLoadingSubmissions] = useState(false)
 
   const dropdownRef = useRef()
   const { id } = useParams()
+  const navigate = useNavigate()
+
+  const handleTabClick = (tab) => {
+    if (tab === 'Editorial') navigate(`/editorial/${id}`)
+    else setActiveTab(tab)
+  }
 
   useEffect(() => {
-    const fetchProblem = async () => {
+    const fetchData = async () => {
       try {
         const res = await axiosClient.get(`/problem/${id}`)
         setProblem(res.data)
-
         const starter = res.data.starterCode.find(
           (s) => s.language === selectedLang
         )
@@ -46,34 +47,27 @@ export default function ProblemPage() {
       } catch (err) {
         console.error('Error fetching problem:', err)
       }
-    }
 
-    const fetchSubmissions = async () => {
-      setIsLoadingSubmissions(true)
       try {
+        setIsLoadingSubmissions(true)
         const res = await axiosClient.get(`/problem/submissions/${id}`)
-        setSubmissionsList(res.data.reverse()) // Reverse to show newest first
+        setSubmissionsList(res.data.reverse())
       } catch (err) {
         console.error('Error fetching submissions:', err)
-        setSubmissionsList([]) // Set to empty array on error
+        setSubmissionsList([])
       } finally {
         setIsLoadingSubmissions(false)
       }
     }
-
-    fetchProblem()
-    fetchSubmissions()
+    fetchData()
   }, [id, selectedLang])
 
-  useEffect(() => {
-    setSelectedTestcase(0)
-  }, [problem])
+  useEffect(() => setSelectedTestcase(0), [problem])
 
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setFontDropdownOpen(false)
-        setLangDropdownOpen(false)
+        setDropdownOpen({ font: false, lang: false })
       }
     }
     document.addEventListener('mousedown', handleClickOutside)
@@ -81,12 +75,14 @@ export default function ProblemPage() {
   }, [])
 
   const getMonacoLang = (lang) => {
-    if (lang === 'c++') return 'cpp'
-    if (lang === 'java') return 'java'
-    if (lang === 'python') return 'python'
-    if (lang === 'javascript') return 'javascript'
-    if (lang === 'c') return 'c'
-    return 'cpp'
+    const map = {
+      'c++': 'cpp',
+      java: 'java',
+      python: 'python',
+      javascript: 'javascript',
+      c: 'c',
+    }
+    return map[lang] || 'cpp'
   }
 
   const resetBoilerplate = () => {
@@ -97,18 +93,13 @@ export default function ProblemPage() {
   }
 
   const handleSubmitCode = async () => {
-    console.log('Submitting code:', code)
-
     try {
       setSubmitting(true)
       setSubmissionResults(null)
-
       const res = await axiosClient.post(`/submission/${id}`, {
-        code,
+        userCode: code,
         language: selectedLang,
       })
-
-      // ✅ Destructure correctly from res.data
       const {
         accepted,
         totalTestCases,
@@ -117,18 +108,11 @@ export default function ProblemPage() {
         memory,
         errMsg,
       } = res.data
-
       setSubmissionResults({
         passed: accepted,
-        summary: {
-          totalTestCases,
-          passedTestCases,
-          runtime,
-          memory,
-        },
+        summary: { totalTestCases, passedTestCases, runtime, memory },
         errMsg: errMsg || null,
       })
-
       setActiveTab('Submissions')
     } catch (error) {
       setSubmissionResults({
@@ -149,22 +133,18 @@ export default function ProblemPage() {
       setSubmitting(false)
     }
   }
+
   const handleRunCode = async () => {
     try {
       setRunning(true)
       setRunResults(null)
-
       const res = await axiosClient.post(`/submission/run/${id}`, {
-        code,
+        userCode: code,
         language: selectedLang,
       })
-
-      // Set entire runResults response
       setRunResults(res.data)
-
       setActiveTab('Run')
     } catch (error) {
-      console.error('Run failed:', error)
       setRunResults({
         passed: false,
         totalTestCases: 0,
@@ -176,16 +156,12 @@ export default function ProblemPage() {
     }
   }
 
-  if (!problem) {
-    return <LoadingOverlay />
-  }
+  if (!problem) return <LoadingOverlay />
 
   return (
     <div className="min-h-screen bg-[#1a1c1e] text-white font-sans px-6 py-4">
       {submitting && <LoadingOverlay />}
-
-      {/* Submit & Run Buttons */}
-      {activeTab === 'Herby' && problem && (
+      {activeTab === 'Herby' && (
         <div className="fixed inset-0 z-50 bg-[#0d0d0d]">
           <ChatWithAI problem={problem} />
           <button
@@ -200,47 +176,21 @@ export default function ProblemPage() {
       <div className="flex justify-center gap-4 mb-6">
         <button
           onClick={handleRunCode}
-          title="Shortcut: Ctrl + '"
-          className="bg-white/10 border border-white/20 text-sm px-6 py-2 rounded-md hover:bg-white/20 transition flex items-center justify-center w-[90px] cursor-pointer"
+          className="bg-white/10 border border-white/20 text-sm px-6 py-2 rounded-md hover:bg-white/20 flex items-center justify-center w-[90px]"
         >
-          {running ? (
-            <svg
-              className="animate-spin h-4 w-4 text-white"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              />
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-              />
-            </svg>
-          ) : (
-            'Run'
-          )}
+          {running ? <span className="animate-spin">⏳</span> : 'Run'}
         </button>
 
         <button
           onClick={handleSubmitCode}
-          className="bg-[#0FA] text-black text-sm px-6 py-2 rounded-md hover:bg-[#0FA]/90 transition cursor-pointer"
+          className="bg-[#0FA] text-black text-sm px-6 py-2 rounded-md hover:bg-[#0FA]/90"
         >
           Submit
         </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* LEFT: Problem Section */}
         <div className="lg:col-span-5 bg-[#1F2123] rounded-xl p-6 border border-[#2A2D2E] space-y-4">
-          {/* Tabs */}
           <div className="flex gap-3 border-b border-[#2A2D2E] pb-2 mb-4">
             {[
               'Description',
@@ -251,7 +201,7 @@ export default function ProblemPage() {
             ].map((tab) => (
               <button
                 key={tab}
-                onClick={() => setActiveTab(tab)}
+                onClick={() => handleTabClick(tab)}
                 className={`text-sm font-medium px-3 py-1.5 rounded-md transition cursor-pointer ${
                   activeTab === tab
                     ? 'bg-[#2A2D2E] text-white'
@@ -263,7 +213,6 @@ export default function ProblemPage() {
             ))}
           </div>
 
-          {/* Content */}
           {activeTab === 'Description' && (
             <>
               <h1 className="text-2xl font-bold">{problem.title}</h1>
@@ -322,14 +271,9 @@ export default function ProblemPage() {
               </div>
             </>
           )}
+
           {activeTab === 'Run' && (
             <RunResultPanel runResults={runResults} running={running} />
-          )}
-
-          {activeTab === 'Editorial' && (
-            <p className="text-sm text-gray-400 italic">
-              Editorial not available yet.
-            </p>
           )}
           {activeTab === 'Solutions' && (
             <SolutionsTab
@@ -339,7 +283,6 @@ export default function ProblemPage() {
           )}
         </div>
 
-        {/* RIGHT: Editor */}
         <div className="lg:col-span-7 flex flex-col gap-4">
           <div className="bg-[#1F2123] rounded-xl border border-[#2A2D2E] flex flex-col flex-grow">
             <div
@@ -351,33 +294,30 @@ export default function ProblemPage() {
               <span className="w-3 h-3 bg-green-500 rounded-full" />
               <button
                 onClick={resetBoilerplate}
-                className="ml-2 text-white hover:text-red-500 cursor-pointer "
+                className="ml-2 text-white hover:text-red-500"
               >
                 <RotateCcw size={18} />
               </button>
-
-              <div className="ml-auto flex items-center gap-3 relative">
-                {/* Font Dropdown */}
+              <div className="ml-auto flex items-center gap-3">
                 <div className="relative">
                   <button
-                    onClick={() => {
-                      setFontDropdownOpen(!fontDropdownOpen)
-                      setLangDropdownOpen(false)
-                    }}
-                    className="text-sm text-gray-400 bg-[#1F2123] px-3 py-1 rounded-md border border-[#2A2D2E] cursor-pointer"
+                    onClick={() =>
+                      setDropdownOpen({ font: !dropdownOpen.font, lang: false })
+                    }
+                    className="text-sm text-gray-400 bg-[#1F2123] px-3 py-1 rounded-md border border-[#2A2D2E]"
                   >
                     Font Size: {fontSize}px
                   </button>
-                  {fontDropdownOpen && (
-                    <div className="absolute right-0 top-full mt-2 w-32 bg-[#111] border border-[#333] rounded-lg shadow-xl z-50">
+                  {dropdownOpen.font && (
+                    <div className="absolute right-0 top-full mt-2 w-32 bg-[#111] border border-[#333] rounded-lg z-50">
                       {[14, 16, 18, 20, 22].map((size) => (
                         <button
                           key={size}
                           onClick={() => {
                             setFontSize(size)
-                            setFontDropdownOpen(false)
+                            setDropdownOpen({ ...dropdownOpen, font: false })
                           }}
-                          className="block w-full px-4 py-2 text-left text-sm text-white hover:bg-[#222] cursor-pointer"
+                          className="block w-full px-4 py-2 text-left text-sm text-white hover:bg-[#222]"
                         >
                           {size}px
                         </button>
@@ -386,27 +326,25 @@ export default function ProblemPage() {
                   )}
                 </div>
 
-                {/* Language Dropdown */}
                 <div className="relative">
                   <button
-                    onClick={() => {
-                      setLangDropdownOpen(!langDropdownOpen)
-                      setFontDropdownOpen(false)
-                    }}
-                    className="text-sm text-gray-400 bg-[#1F2123] px-3 py-1 rounded-md border border-[#2A2D2E] cursor-pointer"
+                    onClick={() =>
+                      setDropdownOpen({ lang: !dropdownOpen.lang, font: false })
+                    }
+                    className="text-sm text-gray-400 bg-[#1F2123] px-3 py-1 rounded-md border border-[#2A2D2E]"
                   >
-                    Lang: {selectedLang.toLowerCase()}
+                    Lang: {selectedLang}
                   </button>
-                  {langDropdownOpen && (
-                    <div className="absolute right-0 top-full mt-2 w-32 bg-[#111] border border-[#333] rounded-lg shadow-xl z-50">
+                  {dropdownOpen.lang && (
+                    <div className="absolute right-0 top-full mt-2 w-32 bg-[#111] border border-[#333] rounded-lg z-50">
                       {['c++', 'python', 'java', 'javascript', 'c'].map(
                         (lang) => (
                           <button
                             key={lang}
                             onClick={() => setSelectedLang(lang)}
-                            className="block w-full px-4 py-2 text-left text-sm text-white hover:bg-[#222] cursor-pointer"
+                            className="block w-full px-4 py-2 text-left text-sm text-white hover:bg-[#222]"
                           >
-                            {lang.toLowerCase()}
+                            {lang}
                           </button>
                         )
                       )}
@@ -425,10 +363,8 @@ export default function ProblemPage() {
                   : 'border-[#2A2D2E]'
               }`}
             >
-              {/* Exit View Button */}
               {viewingSubmission && (
                 <div className="absolute top-3 right-7 mt-5 flex items-center gap-2 z-10">
-                  {/* Status Badge */}
                   <span
                     className={`text-xs font-semibold px-2 py-1 rounded-full ${
                       viewingSubmission.passed
@@ -438,36 +374,32 @@ export default function ProblemPage() {
                   >
                     {viewingSubmission.passed ? 'Accepted' : 'Rejected'}
                   </span>
-
-                  {/* Exit Button */}
                   <button
                     onClick={() => setViewingSubmission(null)}
-                    className="bg-[#0FA] text-black px-3 py-1.5 rounded-md text-xs font-semibold hover:scale-105 hover:shadow-[0_0_12px_#0FA] transition cursor-pointer"
+                    className="bg-[#0FA] text-black px-3 py-1.5 rounded-md text-xs font-semibold hover:scale-105 hover:shadow-[0_0_12px_#0FA]"
                   >
                     Exit View
                   </button>
                 </div>
               )}
-
               <Editor
                 height="420px"
                 language={getMonacoLang(selectedLang)}
                 value={viewingSubmission ? viewingSubmission.code : code}
-                onChange={(value) => {
-                  if (!viewingSubmission) setCode(value || '')
-                }}
+                onChange={(value) => !viewingSubmission && setCode(value || '')}
                 options={{
                   readOnly: !!viewingSubmission,
                   scrollBeyondLastLine: true,
                   automaticLayout: true,
                   scrollbar: { vertical: 'visible', horizontal: 'visible' },
                   minimap: { enabled: false },
-                  fontSize: fontSize,
+                  fontSize,
                 }}
                 theme="vs-dark"
               />
             </div>
           </div>
+
           {runResults && (
             <div className="text-sm text-white bg-[#2A2D2E] p-4 rounded-lg border border-[#3A3D3E]">
               <p>
@@ -479,7 +411,6 @@ export default function ProblemPage() {
             </div>
           )}
 
-          {/* Testcases */}
           <div className="bg-[#1F2123] rounded-xl border border-[#2A2D2E]">
             <div className="px-4 py-3 border-b border-[#2A2D2E] flex items-center gap-4">
               <p className="text-white font-semibold text-base">Testcases</p>
@@ -488,17 +419,18 @@ export default function ProblemPage() {
                   <button
                     key={idx}
                     onClick={() => setSelectedTestcase(idx)}
-                    className={`px-3 py-1 text-sm rounded-md border cursor-pointer ${
+                    className={`px-3 py-1 text-sm rounded-md border ${
                       selectedTestcase === idx
                         ? 'bg-white text-black border-white'
                         : 'text-gray-400 border-[#2A2D2E] hover:bg-[#2A2D2E]'
-                    } transition whitespace-nowrap`}
+                    }`}
                   >
                     Case {idx + 1}
                   </button>
                 ))}
               </div>
             </div>
+
             <div className="px-4 py-4 space-y-4">
               <div>
                 <p className="text-sm font-semibold text-gray-300 mb-1">

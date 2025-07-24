@@ -8,6 +8,7 @@ import CreateProblem from '../pages/Admin/CreateProblem.jsx'
 import AdminPanel from '../pages/Admin/AdminPanel.jsx'
 import ChatWithAI from '../components/ChatWithAI.jsx'
 import ProfilePage from '../pages/ProfilePage.jsx'
+import Editorial from '../components/Editorial.jsx'
 
 // Admin Sub Routes
 import ProblemListForUpdate from '../pages/Admin/ProblemList.jsx'
@@ -285,6 +286,10 @@ const AnimatedRoutes = () => {
         <Route
           path="/chat"
           element={isAuthenticated ? <ChatWithAI /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/editorial/:id"
+          element={isAuthenticated ? <Editorial /> : <Navigate to="/login" />}
         />
       </Routes>
     </AnimatePresence>

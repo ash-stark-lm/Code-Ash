@@ -12,14 +12,23 @@ const submitCode = async (req, res) => {
     const userId = req.result._id
 
     const problemId = req.params.id
-    const { code, language } = req.body
-    if (!userId || !problemId || !code || !language) {
+    const { userCode, language } = req.body
+    if (!userId || !problemId || !userCode || !language) {
       return res.status(400).send('Missing required fields')
     }
     //Fetch the problem from database
     const problem = await Problem.findById(problemId)
     //Now we can have hiddenTestCases
     //store the code in db first->pending then send to judge 0 so that even if judge0 not worked we still have the code
+
+    const ref = problem.referenceSolution.find((r) => r.language === language)
+
+    if (!ref || !ref.header || !ref.main) {
+      return res.status(400).send('Missing reference solution parts')
+    }
+
+    const code = `${ref.header}${userCode}${ref.main}`.trim()
+
     const submittedResult = await Submission.create({
       userId,
       problemId,
@@ -105,14 +114,22 @@ const runCode = async (req, res) => {
   try {
     const userId = req.result._id
     const problemId = req.params.id
-    const { code, language } = req.body
+    const { userCode, language } = req.body
 
-    if (!userId || !problemId || !code || !language) {
+    if (!userId || !problemId || !userCode || !language) {
       return res.status(400).send('Missing required fields')
     }
 
     const problem = await Problem.findById(problemId)
     const languageId = getLanguageId(language)
+
+    const ref = problem.referenceSolution.find((r) => r.language === language)
+
+    if (!ref || !ref.header || !ref.main) {
+      return res.status(400).send('Missing reference solution parts')
+    }
+
+    const code = `${ref.header}${userCode}${ref.main}`.trim()
 
     const submissions = problem.visibleTestCases.map((testCase) => ({
       source_code: code,

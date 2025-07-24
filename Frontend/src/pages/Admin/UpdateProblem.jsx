@@ -56,6 +56,12 @@ const UpdateProblem = () => {
 
   const handleUpdate = async () => {
     setLoading(true)
+    const sanitizedReferenceSolutions = referenceSolution.map((sol) => ({
+      language: sol.language,
+      header: sol.header || '',
+      functionSignature: sol.functionSignature,
+      main: sol.main,
+    }))
     const updatedProblem = {
       title,
       description,
@@ -64,13 +70,13 @@ const UpdateProblem = () => {
       visibleTestCases,
       hiddenTestCases,
       starterCode,
-      referenceSolution,
+      referenceSolution: sanitizedReferenceSolutions,
     }
 
     try {
       await axiosClient.put(`/problem/update/${id}`, updatedProblem)
       toast.success(`✅ "${title}" updated successfully!`)
-      navigate('/admin/problems')
+      navigate('/admin/update-problem')
     } catch (err) {
       toast.error(
         `❌ Update failed: ${err?.response?.data?.message || 'Server error'}`

@@ -36,18 +36,23 @@ const submitBatch = async (submissions) => {
     },
   }
 
-  async function fetchData() {
-    try {
-      const response = await axios.request(options)
-      return response.data
-    } catch (error) {
-      // console.error(error)
+  try {
+    const response = await axios.request(options)
+
+    // Validate response structure
+    if (!response.data || !Array.isArray(response.data)) {
+      throw new Error('Invalid response structure from Judge0')
     }
+
+    return response.data
+  } catch (error) {
+    console.error('Judge0 submitBatch error:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+    })
+    throw new Error(`Failed to submit to Judge0: ${error.message}`)
   }
-
-  const result = await fetchData() //it returns array of tokens as response now hit get request to get answers -> status id we can cehck
-
-  return result
 }
 
 const waiting = (seconds) => {

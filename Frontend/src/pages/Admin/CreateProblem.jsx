@@ -37,7 +37,7 @@ const CreateProblem = () => {
         language: lang,
         ...(type === 'starter'
           ? { boilerPlateCode: '' }
-          : { completeCode: '' }),
+          : { header: '', functionSignature: '', main: '' }),
       }))
 
     setStarterCode(initLangObjects('starter'))
@@ -45,21 +45,35 @@ const CreateProblem = () => {
   }, [])
 
   const handleSubmit = async () => {
-    setLoading(true)
-    const problem = {
-      title,
-      description,
-      difficulty,
-      tags: tags.map((t) => t.value),
-      visibleTestCases,
-      hiddenTestCases,
-      starterCode,
-      referenceSolution,
-    }
-
     try {
+      setLoading(true)
+
+      const sanitizedReferenceSolutions = referenceSolution.map((sol) => ({
+        language: sol.language,
+        header: sol.header || '',
+        functionSignature: sol.functionSignature,
+        main: sol.main,
+      }))
+
+      const problem = {
+        title,
+        description,
+        difficulty,
+        tags: tags.map((t) => t.value),
+        visibleTestCases,
+        hiddenTestCases,
+        starterCode,
+        referenceSolution: sanitizedReferenceSolutions,
+      }
+
+      console.log(
+        '🚀 Final Payload Being Sent',
+        JSON.stringify(problem, null, 2)
+      )
+
       await axiosClient.post('/problem/create', problem)
       toast.success(`✅ "${title}" created successfully!`)
+      navigate('/admin/create-problem')
     } catch (err) {
       toast.error(
         `❌ Failed to create problem: ${

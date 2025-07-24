@@ -1,9 +1,14 @@
+import React from 'react'
+
 const ReferenceSolutionSection = ({ solutions, setSolutions }) => {
-  const updateSolution = (idx, field, value) => {
+  const updateSolution = (idx, value) => {
     setSolutions((prev) =>
-      prev.map((sol, i) => (i === idx ? { ...sol, [field]: value } : sol))
+      prev.map((sol, i) => (i === idx ? { ...sol, main: value } : sol))
     )
   }
+
+  const combineCode = ({ header = '', functionSignature = '', main = '' }) =>
+    [header, functionSignature, main].filter(Boolean).join('\n').trim()
 
   return (
     <div>
@@ -16,10 +21,8 @@ const ReferenceSolutionSection = ({ solutions, setSolutions }) => {
           <textarea
             className="w-full bg-black border border-[#333] p-2 rounded text-white min-h-[100px]"
             placeholder={`Complete solution for ${sol.language}`}
-            value={sol.completeCode}
-            onChange={(e) =>
-              updateSolution(idx, 'completeCode', e.target.value)
-            }
+            value={combineCode(sol)}
+            onChange={(e) => updateSolution(idx, e.target.value)}
           />
         </div>
       ))}

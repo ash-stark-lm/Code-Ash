@@ -9,9 +9,20 @@ export default function SolutionViewer({ referenceSolution }) {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const dropdownRef = useRef()
 
-  const selectedCode = referenceSolution?.find(
+  const selectedSolution = referenceSolution?.find(
     (ref) => ref.language === selectedLang
-  )?.completeCode
+  )
+
+  const selectedCode = selectedSolution
+    ? [
+        selectedSolution.header,
+        selectedSolution.functionSignature,
+        selectedSolution.main,
+      ]
+        .filter(Boolean)
+        .join('\n')
+        .trim()
+    : null
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -45,7 +56,7 @@ export default function SolutionViewer({ referenceSolution }) {
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setDropdownOpen((prev) => !prev)}
-            className="flex items-center gap-2 px-3 py-1.5 bg-[#1F2123] text-white border border-[#2A2D2E] rounded-md hover:bg-[#2A2D2E] transition text-sm"
+            className="flex items-center gap-2 px-3 py-1.5 bg-[#1F2123] text-white border border-[#2A2D2E] rounded-md hover:bg-[#2A2D2E] transition text-sm cursor-pointer"
           >
             {selectedLang}
             <ChevronDown className="w-4 h-4" />

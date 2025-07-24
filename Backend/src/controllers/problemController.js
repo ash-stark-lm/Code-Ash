@@ -28,7 +28,8 @@ const createProblem = async (req, res) => {
     //check on visibleTestCases and hiddenTestCases->judge0
     const isValid = await validReferenceSolution(
       referenceSolution,
-      visibleTestCases
+      visibleTestCases,
+      hiddenTestCases
     )
 
     if (!isValid) {
@@ -71,7 +72,8 @@ const updateProblem = async (req, res) => {
     }
     const isValid = await validReferenceSolution(
       referenceSolution,
-      visibleTestCases
+      visibleTestCases,
+      hiddenTestCases
     )
 
     if (!isValid) {
@@ -85,7 +87,7 @@ const updateProblem = async (req, res) => {
     )
     res.status(200).send('Problem Updated Successfully')
   } catch (error) {
-    console.error('Update Error:', error)
+    //console.error('Update Error:', error)
     res.status(400).send(error.message)
   }
 }

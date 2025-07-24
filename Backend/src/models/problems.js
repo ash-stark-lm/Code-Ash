@@ -150,7 +150,14 @@ const problemSchema = new Schema(
           enum: ['c++', 'c', 'java', 'python', 'javascript'], // fixed casing
           required: true,
         },
-        completeCode: {
+        header: {
+          type: String,
+        },
+        functionSignature: {
+          type: String,
+          required: true,
+        },
+        main: {
           type: String,
           required: true,
         },
