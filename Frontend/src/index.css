@@ -1,5 +1,5 @@
 @import 'tailwindcss';
-
+@import 'tailwindcss/preflight';
 body {
   scroll-behavior: auto;
   overflow: hidden;
