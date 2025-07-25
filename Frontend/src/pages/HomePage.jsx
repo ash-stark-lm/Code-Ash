@@ -16,6 +16,7 @@ const HomePage = function () {
   const [selectedLang, setSelectedLang] = useState('cpp')
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const profileRef = useRef()
+  console.log('re render')
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -271,7 +272,7 @@ Explanation: nums[0] + nums[1] = 2 + 7 = 9`}
 
       <section className="bg-[#0e0e0e] text-white py-20 px-6 flex flex-col lg:flex-row items-center justify-between lg:space-x-16 max-w-7xl mx-auto">
         {/* Left Text */}
-        <div className="flex-1 flex flex-col items-center lg:items-start text-center lg:text-left space-y-6 max-w-2xl">
+        <div className="flex-1 flex flex-col items-center lg:items-start text-center lg:text-left space-y-6 max-w-2xl -ml-20">
           {/* Glowing "Must Try" Badge */}
           <div className="bg-[#0FA] text-black text-sm font-bold px-4 py-1 rounded-full shadow-xl uppercase tracking-wide animate-bounce">
             🔥 Must Try Feature
@@ -320,4 +321,4 @@ Explanation: nums[0] + nums[1] = 2 + 7 = 9`}
     </div>
   )
 }
-export default HomePage
+export default React.memo(HomePage)

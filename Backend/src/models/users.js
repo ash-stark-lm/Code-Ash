@@ -77,7 +77,7 @@ userSchema.methods.getJWT = function () {
     { _id: this._id, emailId: this.emailId, role: this.role },
     process.env.JWT_SECRET_KEY,
     {
-      expiresIn: '1h', //valid for 1hr
+      expiresIn: '1d', //valid for 1 day
     }
   )
   return token
