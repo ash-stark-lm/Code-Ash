@@ -14,7 +14,9 @@ createRoot(document.getElementById('root')).render(
       <ErrorBoundary>
         <Provider store={store}>
           <BrowserRouter>
-            <App />
+            <div className="font-sans">
+              <App />
+            </div>
           </BrowserRouter>
         </Provider>
       </ErrorBoundary>

@@ -1,288 +1,380 @@
 import React, { useEffect, useState } from 'react'
+import axiosClient from '../utils/axiosClient.js'
+import { useNavigate } from 'react-router-dom'
+import SolvedProblems from '../components/SolvedProblem.jsx'
+import Heatmap from '../components/HeatMap.jsx'
+import { PieChart, Pie, Cell, Tooltip } from 'recharts'
 import { motion } from 'framer-motion'
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
-import axiosClient from '../utils/axiosClient'
 import { ArrowLeft } from 'lucide-react'
-import { useSelector } from 'react-redux'
+import LoadingOverlay from '../components/LoadingOverlay.jsx'
+import StreakCard from '../components/StreakCard.jsx'
 
-const COLORS = ['#0FA', '#555']
+const PIE_COLORS = ['#0FA', '#facc15', '#ef4444', '#334155']
 
 const ProfilePage = () => {
-  const [currentUser, setCurrentUser] = useState(null)
-  const [formData, setFormData] = useState({ age: '', gender: '' })
-  const [solvedCount, setSolvedCount] = useState(0)
+  const [user, setUser] = useState(null)
+  const [submissions, setSubmissions] = useState([])
+  const [solvedProblems, setSolvedProblems] = useState([])
   const [totalProblems, setTotalProblems] = useState(0)
+  const [formData, setFormData] = useState({ age: '', gender: '' })
   const [isEditingAge, setIsEditingAge] = useState(false)
   const [isEditingGender, setIsEditingGender] = useState(false)
-  const { loading } = useSelector((state) => state.auth)
+  const [loading, setLoading] = useState(false)
+
+  const navigate = useNavigate()
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchUser = async () => {
+      setLoading(true)
       try {
-        const userRes = await axiosClient.get('/auth/user/profile')
-        const totalRes = await axiosClient.get('/problem?page=1&limit=1')
-        const solvedCount = userRes.data.problemSolved?.length || 0
+        const res = await axiosClient.get('/auth/user/profile')
+        const user = res.data
 
-        setCurrentUser(userRes.data)
-        setSolvedCount(solvedCount)
+        const [solvedRes, acceptedSubmissionsRes, totalRes] = await Promise.all(
+          [
+            axiosClient.get('/problem/user'),
+            axiosClient.get(`/problem/accepted-submissions/${user._id}`),
+            axiosClient.get('/problem?page=1&limit=1'),
+          ]
+        )
+
+        const solved = solvedRes.data || []
+        const accepted = acceptedSubmissionsRes.data || []
+        setSolvedProblems(solved)
+        setSubmissions(accepted)
         setTotalProblems(totalRes.data.totalProblems || 0)
+
+        const calculateStreaks = (submissions) => {
+          const dateSet = new Set()
+          submissions.forEach((sub) => {
+            const date = new Date(sub.createdAt).toISOString().split('T')[0]
+            dateSet.add(date)
+          })
+
+          const sortedDates = Array.from(dateSet)
+            .map((d) => new Date(d))
+            .sort((a, b) => a - b)
+
+          let maxStreak = 0
+          let currentStreak = 0
+          let prevDate = null
+
+          const today = new Date()
+          const todayStr = today.toISOString().split('T')[0]
+
+          for (let i = 0; i < sortedDates.length; i++) {
+            const date = sortedDates[i]
+            if (prevDate === null) {
+              currentStreak = 1
+            } else {
+              const diff = (date - prevDate) / (1000 * 60 * 60 * 24)
+              if (diff === 1) currentStreak++
+              else if (diff === 0) continue
+              else currentStreak = 1
+            }
+            maxStreak = Math.max(maxStreak, currentStreak)
+            prevDate = date
+          }
+
+          const lastDateStr = sortedDates.at(-1)?.toISOString().split('T')[0]
+          const yesterday = new Date()
+          yesterday.setDate(today.getDate() - 1)
+          const yesterdayStr = yesterday.toISOString().split('T')[0]
+
+          const isActive =
+            lastDateStr === todayStr || lastDateStr === yesterdayStr
+          if (!isActive) currentStreak = 0
+
+          return { currentStreak, maxStreak }
+        }
+
+        const { currentStreak, maxStreak } = calculateStreaks(accepted)
+
+        setUser({
+          _id: user._id,
+          name: user.firstName,
+          email: user.emailId,
+          role: user.role,
+          age: user.age,
+          gender: user.gender,
+          solved: solved.length,
+          submissions: accepted.length,
+          streak: currentStreak,
+          maxStreak,
+          solutionPosts: 0,
+        })
+
+        setFormData({ age: user.age || '', gender: user.gender || '' })
       } catch (err) {
-        console.error(err)
+        console.error(
+          'Error fetching user:',
+          err?.response?.data || err.message
+        )
+        navigate('/login')
+      } finally {
+        setLoading(false)
       }
     }
 
-    fetchData()
+    fetchUser()
   }, [])
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value })
-  }
-
-  const handleUpdate = async (e) => {
-    e.preventDefault()
+  const updateField = async (field) => {
+    setLoading(true)
     try {
-      await axiosClient.patch('/auth/user/update', formData)
+      await axiosClient.patch('/auth/user/update', { [field]: formData[field] })
       const userRes = await axiosClient.get('/auth/user/profile')
-      setCurrentUser(userRes.data)
-      setIsEditingAge(false)
-      setIsEditingGender(false)
+      const updatedUser = userRes.data
+      setUser((prev) => ({
+        ...prev,
+        [field]: updatedUser[field],
+      }))
+      setFormData((prev) => ({
+        ...prev,
+        [field]: updatedUser[field],
+      }))
+      if (field === 'age') setIsEditingAge(false)
+      if (field === 'gender') setIsEditingGender(false)
     } catch (err) {
-      console.error(err)
+      console.error('Update failed:', err)
+    } finally {
+      setLoading(false)
     }
   }
 
+  if (!user) return <LoadingOverlay />
+
+  const easy = solvedProblems.filter((p) => p.difficulty === 'easy').length
+  const medium = solvedProblems.filter((p) => p.difficulty === 'medium').length
+  const hard = solvedProblems.filter((p) => p.difficulty === 'hard').length
+  const solvedTotal = easy + medium + hard
+  const unsolvedCount = Math.max(totalProblems - solvedTotal, 0)
+
   const pieData = [
-    { name: 'Solved', value: solvedCount },
-    { name: 'Remaining', value: Math.max(totalProblems - solvedCount, 0) },
+    { name: 'Solved (Easy)', value: easy },
+    { name: 'Solved (Medium)', value: medium },
+    { name: 'Solved (Hard)', value: hard },
+    { name: 'Unsolved', value: unsolvedCount },
   ]
 
   return (
-    <div className="min-h-screen bg-[#0e0e0e] text-white py-10 px-6">
-      {loading || !currentUser ? (
-        <div className="flex items-center justify-center h-[300px]">
-          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[#0FA]"></div>
-        </div>
-      ) : (
-        <>
-          {/* Welcome Header with Animation */}
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7 }}
-            className="text-center max-w-4xl mx-auto mb-10 relative"
-          >
-            <button
-              onClick={() => window.history.back()}
-              className="absolute right-0 top-0 bg-[#0FA] text-black px-5 py-2 rounded-lg font-semibold hover:scale-105 hover:shadow-[0_0_20px_#0FA] transition cursor-pointer"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </button>
+    <motion.div
+      className="p-6 md:p-10 text-white bg-[#111] min-h-screen relative"
+      initial={{ opacity: 0, y: 40 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, ease: 'easeOut' }}
+    >
+      {loading && <LoadingOverlay />}
+      <motion.div
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7 }}
+        className="text-center max-w-4xl mx-auto mb-10 relative"
+      >
+        <button
+          onClick={() => navigate(-1)}
+          className="absolute right-0 top-0 bg-[#0FA] text-black px-5 py-2 rounded-lg font-semibold hover:scale-105 hover:shadow-[0_0_20px_#0FA] transition cursor-pointer"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </button>
+        <h1 className="text-5xl md:text-6xl font-bold leading-tight text-center">
+          Welcome,{' '}
+          <span className="text-[#0FA]">
+            {user.name.charAt(0).toUpperCase() + user.name.slice(1)}
+          </span>
+          <br />
+          <span className="text-xl md:text-2xl font-medium flex items-center justify-center gap-2 mt-2">
+            Thanks for being an active user of{' '}
+            <span>
+              Code<span className="text-[#0FA]">Ash</span>
+            </span>
+          </span>
+        </h1>
+      </motion.div>
 
-            <h1 className="text-5xl md:text-6xl font-bold leading-tight text-center">
-              Welcome,{' '}
-              <span className="text-[#0FA]">
-                {currentUser?.firstName.charAt(0).toUpperCase() +
-                  currentUser?.firstName.slice(1)}
-              </span>
-              <br />
-              <span className="text-xl md:text-2xl font-medium flex items-center justify-center gap-2 mt-2">
-                Thanks for being an active user of{' '}
-                <span>
-                  Code<span className="text-[#0FA]">Ash</span>
-                </span>
-              </span>
+      <div className="min-h-screen bg-[#0a0a0a] text-white p-6 font-inter">
+        {/* Avatar and Info */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="flex items-center space-x-6"
+        >
+          <div className="w-28 h-28 rounded-full bg-[#2a2a2a] text-5xl flex items-center justify-center font-bold border-2 border-[#333]">
+            {user.name?.charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold text-white">
+              {user.name.charAt(0).toUpperCase() + user.name.slice(1)}
             </h1>
-          </motion.div>
+            <div className="text-[#b78bfa] text-lg capitalize">{user.role}</div>
 
-          {/* Main Grid */}
-          <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10">
-            {/* USER DETAILS */}
-            <motion.div
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="bg-[#111] border border-[#333] p-6 rounded-xl shadow-lg"
-            >
-              <h2 className="text-xl font-semibold mb-4">User Details</h2>
-              <div className="space-y-2 text-gray-300 text-base">
-                <p>
-                  <span className="text-gray-500">Name:</span>{' '}
-                  {currentUser?.firstName
-                    ? currentUser.firstName.charAt(0).toUpperCase() +
-                      currentUser.firstName.slice(1)
-                    : ''}
-                  {currentUser?.lastName
-                    ? ' ' +
-                      currentUser.lastName.charAt(0).toUpperCase() +
-                      currentUser.lastName.slice(1)
-                    : ''}
-                </p>
-                <p>
-                  <span className="text-gray-500">Email:</span>{' '}
-                  {currentUser?.emailId}
-                </p>
-
-                {/* AGE */}
+            <div className="flex items-center flex-wrap gap-4 mt-2 text-sm text-[#aaa]">
+              {/* Age Field */}
+              <div className="flex items-center gap-1">
+                👤 Age:
                 {isEditingAge ? (
-                  <form
-                    onSubmit={handleUpdate}
-                    className="flex gap-2 items-center"
-                  >
+                  <>
                     <input
                       type="number"
-                      name="age"
-                      placeholder="Enter Age"
                       value={formData.age}
-                      onChange={handleChange}
-                      className="bg-[#222] border border-[#333] px-2 py-1 text-white rounded "
+                      onChange={(e) =>
+                        setFormData({ ...formData, age: e.target.value })
+                      }
+                      className="bg-[#1a1a1a] text-white px-2 py-0.5 border border-[#333] rounded w-16 ml-1"
                     />
                     <button
-                      type="submit"
-                      className="text-sm text-black bg-[#0FA] px-3 py-1 rounded hover:bg-[#0c8] cursor-pointer"
+                      type="button"
+                      onClick={() => updateField('age')}
+                      className="text-[#0FA] ml-1 hover:underline"
                     >
                       Save
                     </button>
+                  </>
+                ) : (
+                  <>
+                    <span className="ml-1">{user.age}</span>
                     <button
                       type="button"
-                      onClick={() => setIsEditingAge(false)}
-                      className="text-sm px-2 text-red-400 cursor-pointer"
-                    >
-                      Cancel
-                    </button>
-                  </form>
-                ) : (
-                  <p>
-                    <span className="text-gray-500">Age:</span>{' '}
-                    {currentUser?.age ?? 'Not Set'}{' '}
-                    <button
-                      className="text-sm text-blue-400 ml-2 cursor-pointer"
-                      onClick={() => {
-                        setFormData({ ...formData, age: currentUser.age || '' })
-                        setIsEditingAge(true)
-                      }}
+                      onClick={() => setIsEditingAge(true)}
+                      className="text-[#0FA] ml-1 hover:underline"
                     >
                       Edit
                     </button>
-                  </p>
+                  </>
                 )}
+              </div>
 
-                {/* GENDER */}
+              {/* Gender Field */}
+              <div className="flex items-center gap-1">
+                ⚥ Gender:
                 {isEditingGender ? (
-                  <form
-                    onSubmit={handleUpdate}
-                    className="flex gap-2 items-center mt-2"
-                  >
+                  <>
                     <select
-                      name="gender"
                       value={formData.gender}
-                      onChange={handleChange}
-                      className="bg-[#222] border border-[#333] px-2 py-1 text-white rounded"
+                      onChange={(e) =>
+                        setFormData({ ...formData, gender: e.target.value })
+                      }
+                      className="bg-[#1a1a1a] text-white px-2 py-0.5 border border-[#333] rounded ml-1"
                     >
-                      <option value="">Select Gender</option>
+                      <option value="">--</option>
                       <option value="male">Male</option>
                       <option value="female">Female</option>
                       <option value="other">Other</option>
                     </select>
                     <button
-                      type="submit"
-                      className="text-sm text-black bg-[#0FA] px-3 py-1 rounded hover:bg-[#0c8] cursor-pointer"
+                      type="button"
+                      onClick={() => updateField('gender')}
+                      className="text-[#0FA] ml-1 hover:underline"
                     >
                       Save
                     </button>
+                  </>
+                ) : (
+                  <>
+                    <span className="ml-1 capitalize">{user.gender}</span>
                     <button
                       type="button"
-                      onClick={() => setIsEditingGender(false)}
-                      className="text-sm px-2 text-red-400 cursor-pointer"
-                    >
-                      Cancel
-                    </button>
-                  </form>
-                ) : (
-                  <p>
-                    <span className="text-gray-500">Gender:</span>{' '}
-                    {currentUser?.gender ?? 'Not Set'}{' '}
-                    <button
-                      className="text-sm text-blue-400 ml-2 cursor-pointer"
-                      onClick={() => {
-                        setFormData({
-                          ...formData,
-                          gender: currentUser.gender || '',
-                        })
-                        setIsEditingGender(true)
-                      }}
+                      onClick={() => setIsEditingGender(true)}
+                      className="text-[#0FA] ml-1 hover:underline"
                     >
                       Edit
                     </button>
-                  </p>
+                  </>
                 )}
-
-                <p>
-                  <span className="text-gray-500">Role:</span>{' '}
-                  {currentUser?.role === 'admin' ? 'Admin 👑' : 'User'}
-                </p>
               </div>
-            </motion.div>
-
-            {/* PIE CHART */}
-            <motion.div
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="bg-[#111] border border-[#333] p-6 rounded-xl shadow-lg"
-            >
-              <h2 className="text-xl font-semibold mb-4">
-                Problem Solving Progress
-              </h2>
-              <ResponsiveContainer width="100%" height={250}>
-                <PieChart>
-                  <Pie
-                    data={pieData}
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={80}
-                    fill="#0FA"
-                    dataKey="value"
-                    label
-                  >
-                    {pieData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-              <p className="text-center mt-4 text-sm text-gray-300">
-                {solvedCount}/{totalProblems} Problems Solved
-              </p>
-            </motion.div>
+            </div>
           </div>
+        </motion.div>
 
-          {/* SOLVED PROBLEMS LIST */}
-          {currentUser?.problemSolved?.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              className="bg-[#111] border border-[#333] p-6 rounded-xl shadow-lg max-w-4xl mx-auto mt-10"
-            >
-              <h2 className="text-xl font-semibold mb-4">Solved Problems</h2>
-              <ul className="space-y-2 list-disc pl-6 text-green-400 text-sm">
-                {currentUser.problemSolved.map((problem) => (
-                  <li key={problem._id}>
-                    <a
-                      href={`/problem/${problem._id}`}
-                      className="hover:underline hover:text-[#0FA] transition"
-                    >
-                      {problem.title}
-                    </a>
-                  </li>
+        {/* Cards */}
+        <motion.div
+          className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4"
+          initial="hidden"
+          animate="visible"
+          variants={{
+            hidden: {},
+            visible: { transition: { staggerChildren: 0.2 } },
+          }}
+        >
+          {/* Solved Chart */}
+          <motion.div
+            variants={{
+              hidden: { opacity: 0, y: 20 },
+              visible: { opacity: 1, y: 0 },
+            }}
+            transition={{ duration: 0.4 }}
+            className="bg-[#111] p-4 rounded-xl border border-[#222]"
+          >
+            <div className="text-[#0FA] font-semibold text-sm mb-1">
+              Problems Solved
+            </div>
+            <div className="text-2xl font-bold">{solvedTotal}</div>
+            <div className="text-sm text-[#888] mb-4">
+              Out of {totalProblems} total problems
+            </div>
+            <PieChart width={280} height={240}>
+              <Pie
+                dataKey="value"
+                data={pieData}
+                cx="50%"
+                cy="50%"
+                outerRadius={80}
+                label={({ percent }) =>
+                  percent > 0 ? `${(percent * 100).toFixed(0)}%` : ''
+                }
+              >
+                {pieData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={PIE_COLORS[index]} />
                 ))}
-              </ul>
-            </motion.div>
-          )}
-        </>
-      )}
-    </div>
+              </Pie>
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: '#2a2a2a',
+                  border: '1px solid #444',
+                  borderRadius: '6px',
+                  color: '#f1f5f9',
+                  fontSize: '14px',
+                }}
+              />
+            </PieChart>
+          </motion.div>
+
+          {/* Streaks */}
+          <motion.div
+            variants={{
+              hidden: { opacity: 0, y: 20 },
+              visible: { opacity: 1, y: 0 },
+            }}
+            transition={{ duration: 0.4 }}
+            className="bg-gradient-to-br from-[#141414] to-[#1a1a1a] p-6 rounded-2xl border border-[#262626] shadow-lg"
+          >
+            <StreakCard streak={user.streak} maxStreak={user.maxStreak} />
+          </motion.div>
+        </motion.div>
+
+        {/* Solved Problems */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+        >
+          <SolvedProblems
+            problems={solvedProblems}
+            onProblemClick={(id) => navigate(`/problem/${id}`)}
+          />
+        </motion.div>
+
+        {/* Heatmap */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+        >
+          <Heatmap submissions={submissions} />
+        </motion.div>
+      </div>
+    </motion.div>
   )
 }
 

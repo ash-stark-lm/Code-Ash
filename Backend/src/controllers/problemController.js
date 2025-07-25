@@ -183,6 +183,36 @@ const allSolvedProblemsByUser = async (req, res) => {
   return res.status(200).send(user.problemSolved)
 }
 
+// GET /problem/submissions/:userId
+const getAcceptedSubmissions = async (req, res) => {
+  try {
+    const userId = req.result._id // ✅ Secure: taken from JWT auth middleware
+
+    const submissions = await Submission.find({
+      userId,
+      status: 'accepted',
+    }).populate({
+      path: 'problemId',
+      select: '_id title difficulty tags',
+    })
+
+    const result = submissions
+      .filter((s) => s.problemId) // ⛔ safeguard if problemId got deleted
+      .map((s) => ({
+        _id: s.problemId._id,
+        title: s.problemId.title,
+        difficulty: s.problemId.difficulty,
+        tags: s.problemId.tags,
+        createdAt: s.createdAt, // from Submission's timestamps
+      }))
+
+    return res.status(200).json(result)
+  } catch (error) {
+    console.error('❌ Error fetching accepted submissions:', error)
+    return res.status(500).json({ error: 'Internal Server Error' })
+  }
+}
+
 const submittedSolutions = async (req, res) => {
   try {
     const userId = req.result._id
@@ -204,4 +234,5 @@ export {
   getAllProblems,
   allSolvedProblemsByUser,
   submittedSolutions,
+  getAcceptedSubmissions,
 }

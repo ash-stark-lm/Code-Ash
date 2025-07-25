@@ -1,0 +1,15 @@
+.color-empty {
+  fill: #1a1a1a !important; /* Background */
+}
+.color-scale-1 {
+  fill: #b6fcd5 !important; /* Lightest green */
+}
+.color-scale-2 {
+  fill: #6df2a2 !important; /* Lighter green */
+}
+.color-scale-3 {
+  fill: #26a75d !important; /* Medium green */
+}
+.color-scale-4 {
+  fill: #144d2b !important; /* Darkest green */
+}

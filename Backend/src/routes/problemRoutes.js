@@ -9,6 +9,7 @@ import {
   getProblemById,
   allSolvedProblemsByUser,
   submittedSolutions,
+  getAcceptedSubmissions,
 } from '../controllers/problemController.js'
 const problemRouter = express.Router()
 
@@ -27,5 +28,10 @@ problemRouter.get('/:id', userAuthMiddleware, getProblemById)
 //Do indexing of the fields on whom queries are being used very much
 
 problemRouter.get('/submissions/:pid', userAuthMiddleware, submittedSolutions)
+problemRouter.get(
+  '/accepted-submissions/:userId',
+  userAuthMiddleware,
+  getAcceptedSubmissions
+)
 
 export default problemRouter
