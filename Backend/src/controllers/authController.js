@@ -236,6 +236,7 @@ const getProfile = async (req, res) => {
     }
 
     const reply = {
+      _id: userId,
       firstName: user.firstName,
       lastName: user.lastName,
       emailId: user.emailId,

@@ -2,12 +2,13 @@ import React, { useEffect, useRef, useState } from 'react'
 import axiosClient from '../utils/axiosClient'
 import { useNavigate } from 'react-router'
 import LoadingOverlay from '../components/LoadingOverlay'
-import { Book } from 'lucide-react'
+import { Book, CheckCircle, ArrowLeft } from 'lucide-react'
 
 const PAGE_SIZE = 10
 
 export default function Problems() {
-  const [problems, setProblems] = useState([])
+  const [allProblems, setAllProblems] = useState([])
+  const [filteredProblems, setFilteredProblems] = useState([])
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [loading, setLoading] = useState(true)
@@ -16,6 +17,8 @@ export default function Problems() {
   const [showDifficultyDropdown, setShowDifficultyDropdown] = useState(false)
   const [showTagDropdown, setShowTagDropdown] = useState(false)
   const [allTags, setAllTags] = useState([])
+  const [solvedProblemIds, setSolvedProblemIds] = useState([])
+  const [searchQuery, setSearchQuery] = useState('')
 
   const difficultyRef = useRef()
   const tagRef = useRef()
@@ -29,27 +32,12 @@ export default function Problems() {
       )
       let fetched = res.data.problems
 
-      // Step 1: Build full unique tags from original fetched problems (before filtering)
       const tagSet = new Set()
-      res.data.problems.forEach((p) => {
+      fetched.forEach((p) => {
         p.tags.forEach((tag) => tagSet.add(tag.trim()))
       })
       setAllTags(Array.from(tagSet))
-
-      // Step 2: Apply local filters
-      if (selectedDifficulty !== 'All') {
-        fetched = fetched.filter(
-          (p) => p.difficulty.toLowerCase() === selectedDifficulty.toLowerCase()
-        )
-      }
-      if (selectedTag !== 'All') {
-        fetched = fetched.filter((p) =>
-          p.tags.some((tag) => tag.trim() === selectedTag)
-        )
-      }
-
-      setProblems(fetched)
-
+      setAllProblems(fetched)
       setTotalPages(res.data.totalPages)
     } catch (err) {
       console.error('Error:', err)
@@ -59,8 +47,47 @@ export default function Problems() {
   }
 
   useEffect(() => {
+    const fetchSolvedProblems = async () => {
+      try {
+        const res = await axiosClient.get('/problem/user')
+        const ids = res.data.map((prob) => prob._id)
+        setSolvedProblemIds(ids)
+      } catch (err) {
+        console.error('Failed to fetch solved problems', err)
+      }
+    }
+
+    fetchSolvedProblems()
+  }, [])
+
+  useEffect(() => {
     fetchProblems()
   }, [page, selectedDifficulty, selectedTag])
+
+  // Client-side filtering for difficulty, tag, and search
+  useEffect(() => {
+    let filtered = allProblems
+
+    if (selectedDifficulty !== 'All') {
+      filtered = filtered.filter(
+        (p) => p.difficulty.toLowerCase() === selectedDifficulty.toLowerCase()
+      )
+    }
+
+    if (selectedTag !== 'All') {
+      filtered = filtered.filter((p) =>
+        p.tags.some((tag) => tag.trim() === selectedTag)
+      )
+    }
+
+    if (searchQuery.trim() !== '') {
+      filtered = filtered.filter((p) =>
+        p.title.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    }
+
+    setFilteredProblems(filtered)
+  }, [allProblems, selectedDifficulty, selectedTag, searchQuery])
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -83,14 +110,24 @@ export default function Problems() {
 
   return (
     <div className="min-h-screen bg-[#0e0e0e] text-white px-10 py-10 font-sans">
-      <h1 className="text-4xl font-bold mb-10 text-[#0FA] border-b border-[#1f1f1f] pb-4">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between mb-10 border-b border-[#1f1f1f] pb-4">
+        {/* Left: Heading with Icon */}
+        <h1 className="text-4xl font-bold text-[#0FA] flex items-center gap-2">
           <Book size={28} /> Explore Problems
-        </div>
-      </h1>
+        </h1>
+
+        {/* Right: Back to Home Button */}
+        <button
+          onClick={() => navigate('/')}
+          className="flex items-center gap-2 px-4 py-2 bg-white/10 border border-white/20 rounded-lg hover:bg-white/20 transition cursor-pointer text-sm text-white"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          Back to Home
+        </button>
+      </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-6 mb-10">
+      <div className="flex flex-wrap gap-6 mb-6">
         {/* Difficulty Filter Dropdown */}
         <div className="relative" ref={difficultyRef}>
           <button
@@ -126,7 +163,7 @@ export default function Problems() {
             Tag: {selectedTag}
           </button>
           {showTagDropdown && (
-            <div className="absolute mt-2 w-40 bg-[#111] border border-[#333] rounded-lg shadow-xl z-50 ">
+            <div className="absolute mt-2 w-40 bg-[#111] border border-[#333] rounded-lg shadow-xl z-50">
               <button
                 onClick={() => {
                   setSelectedTag('All')
@@ -151,6 +188,17 @@ export default function Problems() {
             </div>
           )}
         </div>
+
+        {/* 🔍 Search Bar */}
+        <div className="flex-1">
+          <input
+            type="text"
+            placeholder="Search by title..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full px-4 py-2 rounded-lg bg-[#111] border border-[#2d2d2d] placeholder:text-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-[#0FA]"
+          />
+        </div>
       </div>
 
       {/* Problem List */}
@@ -158,15 +206,18 @@ export default function Problems() {
         <LoadingOverlay />
       ) : (
         <div className="space-y-6">
-          {problems.map((problem, idx) => (
+          {filteredProblems.map((problem, idx) => (
             <div
               key={problem._id}
               onClick={() => handleProblemClick(problem._id)}
               className="cursor-pointer bg-[#0e1a1a] border border-[#1f1f1f] p-6 rounded-xl hover:border-[#0FA] transition-all"
             >
               <div className="flex justify-between items-center">
-                <h2 className="text-xl font-semibold">
+                <h2 className="text-xl font-semibold flex items-center gap-2">
                   {idx + 1 + (page - 1) * PAGE_SIZE}. {problem.title}
+                  {solvedProblemIds.includes(problem._id) && (
+                    <CheckCircle size={18} className="text-green-400" />
+                  )}
                 </h2>
                 <span
                   className={`text-xs px-3 py-1 rounded-full font-medium shadow-sm ${
@@ -197,21 +248,33 @@ export default function Problems() {
       )}
 
       {/* Pagination */}
-      <div className="flex justify-center mt-12 gap-4">
+      <div className="mt-6 flex justify-center gap-4 items-center">
         <button
           onClick={() => setPage((p) => Math.max(p - 1, 1))}
           disabled={page === 1}
-          className="bg-[#0FA] text-black px-5 py-2 rounded-lg font-semibold hover:scale-105 hover:shadow-[0_0_20px_#0FA] transition cursor-pointer"
+          className={`px-5 py-2 rounded-lg font-semibold transition cursor-pointer
+          ${
+            page === 1
+              ? 'bg-white/10 text-gray-500 cursor-not-allowed'
+              : 'bg-[#0FA] text-black hover:scale-105 hover:shadow-[0_0_20px_#0FA]'
+          }`}
         >
           ← Prev
         </button>
+
         <span className="text-gray-400 text-sm flex items-center">
           Page {page} of {totalPages}
         </span>
+
         <button
           onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
           disabled={page === totalPages}
-          className="bg-[#0FA] text-black px-5 py-2 rounded-lg font-semibold hover:scale-105 hover:shadow-[0_0_20px_#0FA] transition cursor-pointer"
+          className={`px-5 py-2 rounded-lg font-semibold transition cursor-pointer
+          ${
+            page === totalPages
+              ? 'bg-white/10 text-gray-500 cursor-not-allowed'
+              : 'bg-[#0FA] text-black hover:scale-105 hover:shadow-[0_0_20px_#0FA]'
+          }`}
         >
           Next →
         </button>

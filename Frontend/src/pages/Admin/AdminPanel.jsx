@@ -45,7 +45,7 @@ const AdminPanel = () => {
         {/* Back Button */}
         <button
           onClick={() => navigate('/')}
-          className="flex items-center gap-2 px-4 py-2 bg-white/10 border border-white/20 rounded-lg hover:bg-white/20 transition"
+          className="flex items-center gap-2 px-4 py-2 bg-white/10 border border-white/20 rounded-lg hover:bg-white/20 transition cursor-pointer"
         >
           <ArrowLeft className="w-5 h-5" />
           <span className="text-sm">Back to Home</span>
