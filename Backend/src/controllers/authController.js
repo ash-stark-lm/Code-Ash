@@ -8,7 +8,7 @@ import Submission from '../models/submission.js'
 import { OAuth2Client } from 'google-auth-library'
 import Otp from '../models/otp.js'
 import { sendOtpEmail } from '../utils/sendEmail.js'
-import { PendingUser } from '../models/pendingUSer.js'
+import { PendingUser } from '../models/pendingUser.js'
 
 const sendOtp = async (req, res) => {
   try {
