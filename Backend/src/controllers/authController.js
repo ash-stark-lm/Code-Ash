@@ -9,6 +9,8 @@ import { OAuth2Client } from 'google-auth-library'
 import Otp from '../models/otp.js'
 import { sendOtpEmail } from '../utils/sendEmail.js'
 import { PendingUser } from '../models/pendingUser.js'
+import 'dotenv/config'
+import { sendResetPasswordEmail } from '../utils/sendEmail.js'
 
 const sendOtp = async (req, res) => {
   try {
@@ -135,6 +137,57 @@ const verifyOtp = async (req, res) => {
     })
   } catch (error) {
     return res.status(500).json({ message: error.message })
+  }
+}
+// authController.js
+const resendOtp = async (req, res) => {
+  try {
+    const { emailId } = req.body
+
+    // Check if OTP was recently sent (cooldown)
+    const lastOtp = await Otp.findOne({ email: emailId }).sort({
+      createdAt: -1,
+    })
+
+    if (lastOtp) {
+      const cooldownTime = 30 * 1000 // 30 seconds cooldown
+      const timeSinceLastOtp =
+        Date.now() - new Date(lastOtp.createdAt).getTime()
+
+      if (timeSinceLastOtp < cooldownTime) {
+        const remainingTime = Math.ceil(
+          (cooldownTime - timeSinceLastOtp) / 1000
+        )
+        return res.status(429).json({
+          success: false,
+          message: `Please wait ${remainingTime} seconds before requesting a new OTP.`,
+        })
+      }
+    }
+
+    // Check if pending user exists
+    const pendingUser = await PendingUser.findOne({ emailId })
+    if (!pendingUser) {
+      return res.status(400).json({ message: 'No pending registration found.' })
+    }
+
+    // Generate new OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString()
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000) // 5 mins expiry
+
+    // Delete old OTPs and save new one
+    await Otp.findOneAndDelete({ email: emailId })
+    await Otp.create({ email: emailId, otp, expiresAt })
+
+    // Resend OTP email
+    await sendOtpEmail(emailId, otp)
+
+    return res.status(200).json({
+      success: true,
+      message: 'New OTP sent successfully.',
+    })
+  } catch (err) {
+    return res.status(500).json({ message: 'Failed to resend OTP.' })
   }
 }
 
@@ -371,6 +424,83 @@ const checkAuth = async (req, res) => {
   }
 }
 
+const resetPassword = async (req, res) => {
+  try {
+    const { token, newPassword } = req.body
+
+    if (!token || !newPassword) {
+      return res
+        .status(400)
+        .json({ message: 'Token and new password required' })
+    }
+
+    // ✅ Manual password strength validation
+    const hasMinLength = newPassword.length >= 8
+    const hasLowercase = /[a-z]/.test(newPassword)
+    const hasUppercase = /[A-Z]/.test(newPassword)
+    const hasSymbol = /[^A-Za-z0-9]/.test(newPassword)
+
+    if (!hasMinLength || !hasLowercase || !hasUppercase || !hasSymbol) {
+      return res.status(400).json({
+        message:
+          'Password must be at least 8 characters long and include at least one lowercase letter, one uppercase letter, and one symbol.',
+      })
+    }
+
+    let decoded
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET_KEY)
+    } catch (err) {
+      return res.status(400).json({ message: 'Invalid or expired token' })
+    }
+
+    const user = await User.findById(decoded.userId)
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+
+    const hashedPassword = await Hashing(newPassword)
+    user.password = hashedPassword
+    await user.save()
+
+    return res.json({ success: true, message: 'Password reset successful' })
+  } catch (error) {
+    console.error('Reset password error:', error)
+    return res.status(500).json({ message: 'Server error' })
+  }
+}
+
+export const forgotPassword = async (req, res) => {
+  try {
+    const { emailId } = req.body
+
+    if (!emailId) {
+      return res.status(400).json({ message: 'Email is required' })
+    }
+
+    const user = await User.findOne({ emailId })
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+
+    // Create reset token with 15 min expiry
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET_KEY, {
+      expiresIn: '15m',
+    })
+
+    // Use environment-specific frontend URL
+    const resetLink = `${process.env.CORS_ORIGIN_TEST}/reset-password/${token}`
+
+    // Send HTML email
+    await sendResetPasswordEmail(emailId, resetLink)
+
+    res.status(200).json({ success: true, message: 'Reset email sent' })
+  } catch (err) {
+    console.error('Forgot password error:', err)
+    res.status(500).json({ message: 'Internal server error' })
+  }
+}
+
 export const userAuthController = {
   registerUser,
   login,
@@ -382,4 +512,7 @@ export const userAuthController = {
   getProfile,
   googleLogin,
   verifyOtp,
+  resendOtp,
+  resetPassword,
+  forgotPassword,
 }

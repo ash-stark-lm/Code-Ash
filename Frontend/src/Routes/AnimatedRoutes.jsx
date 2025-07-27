@@ -14,7 +14,7 @@ import Editorial from '../components/Editorial.jsx'
 import ProblemListForUpdate from '../pages/Admin/ProblemList.jsx'
 import UpdateProblem from '../pages/Admin/UpdateProblem'
 import DeleteProblem from '../pages/Admin/DeleteProblem.jsx'
-
+import ForgotPassword from '../pages/ForgotPassword.jsx'
 // Visualizer Components
 import {
   BFSVisualizer,
@@ -39,6 +39,7 @@ import {
 } from '../components/Visualizer/index.jsx'
 
 import OtpVerification from '../pages/OtpVerifcation.jsx'
+import ResetPassword from '../pages/ResetPassword.jsx'
 
 const AnimatedRoutes = () => {
   const location = useLocation()
@@ -56,11 +57,16 @@ const AnimatedRoutes = () => {
           path="/login"
           element={isAuthenticated ? <Navigate to="/" /> : <Login />}
         />
+
         <Route
           path="/signup"
           element={isAuthenticated ? <Navigate to="/" /> : <SignUp />}
         />
         <Route path="/verifyOTP" element={<OtpVerification />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
+
         <Route
           path="/problems"
           element={isAuthenticated ? <Problems /> : <Login />}

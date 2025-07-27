@@ -26,3 +26,22 @@ export const sendOtpEmail = async (to, otp) => {
 
   await transporter.sendMail(mailOptions)
 }
+export const sendResetPasswordEmail = async (to, resetLink) => {
+  const mailOptions = {
+    from: `"CodeAsh" <${process.env.EMAIL_USERNAME}>`,
+    to,
+    subject: 'Reset Your Password - CodeAsh',
+    html: `
+      <div style="font-family: sans-serif;">
+        <h2>🔐 Forgot your password?</h2>
+        <p>Click the link below to reset your password:</p>
+        <a href="${resetLink}" style="display: inline-block; padding: 10px 20px; background-color: #0FA; color: #fff; text-decoration: none; border-radius: 4px;">
+          Reset Password
+        </a>
+        <p>This link will expire in 15 minutes.</p>
+      </div>
+    `,
+  }
+
+  await transporter.sendMail(mailOptions)
+}

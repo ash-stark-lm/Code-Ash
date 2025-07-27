@@ -11,6 +11,7 @@ import { registerUser } from '../authSlice'
 import GoogleLoginButton from '../components/GoogleLogin.jsx'
 import { googleLogin } from '../authSlice.js'
 import { toast } from 'react-toastify'
+import GridGlow from '../components/GridGlow.jsx'
 
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{8,}$/
 
@@ -144,6 +145,7 @@ const SignUp = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-neutral-950 p-4 overflow-hidden relative">
       <AnimatePresence>{loading && <LoadingOverlay />}</AnimatePresence>
+      <GridGlow />
       <motion.div
         className="w-full max-w-5xl bg-neutral-900 rounded-3xl shadow-2xl border border-neutral-800 grid grid-cols-1 lg:grid-cols-2 overflow-hidden"
         initial={{ opacity: 0, scale: 0.95 }}

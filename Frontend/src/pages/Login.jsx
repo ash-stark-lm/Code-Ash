@@ -11,6 +11,7 @@ import { loginUser } from '../authSlice.js'
 import LoadingOverlay from '../components/LoadingOverlay.jsx'
 import GoogleLoginButton from '../components/GoogleLogin.jsx'
 import { googleLogin } from '../authSlice.js'
+import GridGlow from '../components/GridGlow.jsx'
 
 // Schema Validation
 const loginSchema = z.object({
@@ -61,6 +62,7 @@ const Login = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-neutral-950 p-4 overflow-hidden">
       <AnimatePresence>{loading && <LoadingOverlay />}</AnimatePresence>
+      <GridGlow />
       <motion.div
         className="w-full max-w-5xl bg-neutral-900 rounded-3xl shadow-2xl border border-neutral-800 grid grid-cols-1 lg:grid-cols-2 overflow-hidden"
         initial={{ opacity: 0, scale: 0.95 }}
@@ -139,6 +141,14 @@ const Login = () => {
                   Password must be 8+ characters
                 </p>
               )}
+              <div className="mt-2 text-right">
+                <Link
+                  to="/forgot-password"
+                  className="text-sm text-blue-400 hover:underline"
+                >
+                  Forgot password?
+                </Link>
+              </div>
             </motion.div>
 
             <motion.div variants={itemVariants} className="pt-2">

@@ -8,6 +8,8 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import LoadingOverlay from '../components/LoadingOverlay.jsx'
 import { motion } from 'framer-motion'
+import axiosClient from '../utils/axiosClient.js'
+import GridGlow from '../components/GridGlow.jsx'
 
 const otpSchema = z.object({
   emailId: z.string().email(),
@@ -25,6 +27,7 @@ const OtpVerification = () => {
   const [password, setPassword] = useState('')
   const [otpArray, setOtpArray] = useState(['', '', '', '', '', ''])
   const inputRefs = useRef([])
+  const [cooldown, setCooldown] = useState(0) // Track remaining cooldown time
 
   useEffect(() => {
     if (location?.state?.emailId) {
@@ -98,23 +101,38 @@ const OtpVerification = () => {
       toast.error(error || 'OTP verification failed')
     }
   }
+  // Function to handle resend OTP
+  const handleResendOtp = async () => {
+    try {
+      const response = await axiosClient.post('/auth/resend-otp', {
+        emailId: email,
+      })
+      if (response.data.success) {
+        toast.success('New OTP sent!')
+        setCooldown(30) // Start 30-second cooldown
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to resend OTP')
+      if (error.response?.data?.message.includes('wait')) {
+        setCooldown(Math.ceil(error.response.data.message.match(/\d+/)[0]))
+      }
+    }
+  }
+
+  // Cooldown timer effect
+  useEffect(() => {
+    if (cooldown > 0) {
+      const timer = setTimeout(() => setCooldown(cooldown - 1), 1000)
+      return () => clearTimeout(timer)
+    }
+  }, [cooldown])
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white flex items-center justify-center relative overflow-hidden">
       {loading && <LoadingOverlay />}
 
       {/* Background Grid Glow */}
-      <div className="absolute inset-0 pointer-events-none z-0">
-        <div className="w-full h-full grid grid-cols-12 grid-rows-6 gap-4 opacity-10">
-          {[...Array(72)].map((_, i) => (
-            <div
-              key={i}
-              className="bg-[#0FA] rounded-xl animate-pulse delay-[calc(var(--i)*100ms)]"
-              style={{ '--i': i }}
-            ></div>
-          ))}
-        </div>
-      </div>
+      <GridGlow />
 
       {/* OTP Form */}
       <motion.div
@@ -163,6 +181,25 @@ const OtpVerification = () => {
           >
             Verify OTP
           </button>
+
+          {/* Resend OTP Button with Cooldown */}
+          <div className="text-center pt-2">
+            <motion.button
+              type="button"
+              onClick={handleResendOtp}
+              disabled={cooldown > 0}
+              className={`text-sm ${
+                cooldown > 0
+                  ? 'text-gray-500 cursor-not-allowed'
+                  : 'text-[#0FA] hover:underline cursor-pointer'
+              }`}
+              whileTap={cooldown > 0 ? {} : { scale: 0.95 }}
+            >
+              {cooldown > 0
+                ? `Resend OTP in ${cooldown}s`
+                : "Didn't receive code? Resend OTP"}
+            </motion.button>
+          </div>
         </form>
       </motion.div>
     </div>

@@ -16,6 +16,9 @@ const {
   getProfile,
   googleLogin,
   verifyOtp,
+  resendOtp,
+  resetPassword,
+  forgotPassword,
 } = userAuthController
 
 authRouter.post('/user/register', registerUser)
@@ -31,4 +34,9 @@ authRouter.get('/user/profile', userAuthMiddleware, getProfile)
 
 // ✅ OTP Verification Routes
 authRouter.post('/verify-otp', verifyOtp)
+authRouter.post('/resend-otp', resendOtp)
+
+// ✅ Reset Password Route
+authRouter.post('/reset-password', resetPassword)
+authRouter.post('/forgot-password', forgotPassword)
 export default authRouter
