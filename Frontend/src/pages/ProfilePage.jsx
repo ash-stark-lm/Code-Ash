@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import axiosClient from '../utils/axiosClient.js'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
+import { useDispatch } from 'react-redux'
 import SolvedProblems from '../components/SolvedProblem.jsx'
 import Heatmap from '../components/HeatMap.jsx'
 import { PieChart, Pie, Cell, Tooltip } from 'recharts'
@@ -8,6 +9,9 @@ import { motion } from 'framer-motion'
 import { ArrowLeft } from 'lucide-react'
 import LoadingOverlay from '../components/LoadingOverlay.jsx'
 import StreakCard from '../components/StreakCard.jsx'
+import DeleteAccountModal from '../components/DeleteAccountModal.jsx'
+import { toast } from 'react-toastify'
+import { deleteAccount } from '../authSlice.js'
 
 const PIE_COLORS = ['#0FA', '#facc15', '#ef4444', '#334155']
 
@@ -20,8 +24,10 @@ const ProfilePage = () => {
   const [isEditingAge, setIsEditingAge] = useState(false)
   const [isEditingGender, setIsEditingGender] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [showModal, setShowModal] = useState(false)
 
   const navigate = useNavigate()
+  const dispatch = useDispatch()
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -142,6 +148,23 @@ const ProfilePage = () => {
     }
   }
 
+  const handleDeleteAccount = async () => {
+    setLoading(true)
+    try {
+      await dispatch(deleteAccount()).unwrap()
+      toast.success('Account deleted successfully')
+
+      // Add delay to allow state to reset before redirecting
+      setTimeout(() => {
+        navigate('/signup', { replace: true })
+      }, 400)
+    } catch (error) {
+      toast.error(error || 'Failed to delete account')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   if (!user) return <LoadingOverlay />
 
   const easy = solvedProblems.filter((p) => p.difficulty === 'easy').length
@@ -192,100 +215,114 @@ const ProfilePage = () => {
         </h1>
       </motion.div>
 
-      <div className="min-h-screen bg-[#0a0a0a] text-white p-6 font-inter">
+      <div className="min-h-screen bg-[#0a0a0a] text-white p-6 font-inter ">
         {/* Avatar and Info */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="flex items-center space-x-6"
-        >
-          <div className="w-28 h-28 rounded-full bg-[#2a2a2a] text-5xl flex items-center justify-center font-bold border-2 border-[#333]">
-            {user.name?.charAt(0).toUpperCase()}
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold text-white">
-              {user.name.charAt(0).toUpperCase() + user.name.slice(1)}
-            </h1>
-            <div className="text-[#b78bfa] text-lg capitalize">{user.role}</div>
 
-            <div className="flex items-center flex-wrap gap-4 mt-2 text-sm text-[#aaa]">
-              {/* Age Field */}
-              <div className="flex items-center gap-1">
-                👤 Age:
-                {isEditingAge ? (
-                  <>
-                    <input
-                      type="number"
-                      value={formData.age}
-                      onChange={(e) =>
-                        setFormData({ ...formData, age: e.target.value })
-                      }
-                      className="bg-[#1a1a1a] text-white px-2 py-0.5 border border-[#333] rounded w-16 ml-1"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => updateField('age')}
-                      className="text-[#0FA] ml-1 hover:underline"
-                    >
-                      Save
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <span className="ml-1">{user.age}</span>
-                    <button
-                      type="button"
-                      onClick={() => setIsEditingAge(true)}
-                      className="text-[#0FA] ml-1 hover:underline"
-                    >
-                      Edit
-                    </button>
-                  </>
-                )}
+        <div className="flex justify-between items-start">
+          {/* Profile Info */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="flex items-center space-x-6"
+          >
+            <div className="w-28 h-28 rounded-full bg-[#2a2a2a] text-5xl flex items-center justify-center font-bold border-2 border-[#333]">
+              {user.name?.charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-white">
+                {user.name.charAt(0).toUpperCase() + user.name.slice(1)}
+              </h1>
+              <div className="text-[#b78bfa] text-lg capitalize">
+                {user.role}
               </div>
 
-              {/* Gender Field */}
-              <div className="flex items-center gap-1">
-                ⚥ Gender:
-                {isEditingGender ? (
-                  <>
-                    <select
-                      value={formData.gender}
-                      onChange={(e) =>
-                        setFormData({ ...formData, gender: e.target.value })
-                      }
-                      className="bg-[#1a1a1a] text-white px-2 py-0.5 border border-[#333] rounded ml-1"
-                    >
-                      <option value="">--</option>
-                      <option value="male">Male</option>
-                      <option value="female">Female</option>
-                      <option value="other">Other</option>
-                    </select>
-                    <button
-                      type="button"
-                      onClick={() => updateField('gender')}
-                      className="text-[#0FA] ml-1 hover:underline"
-                    >
-                      Save
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <span className="ml-1 capitalize">{user.gender}</span>
-                    <button
-                      type="button"
-                      onClick={() => setIsEditingGender(true)}
-                      className="text-[#0FA] ml-1 hover:underline"
-                    >
-                      Edit
-                    </button>
-                  </>
-                )}
+              <div className="flex items-center flex-wrap gap-4 mt-2 text-sm text-[#aaa]">
+                {/* Age */}
+                <div className="flex items-center gap-1">
+                  👤 Age:
+                  {isEditingAge ? (
+                    <>
+                      <input
+                        type="number"
+                        value={formData.age}
+                        onChange={(e) =>
+                          setFormData({ ...formData, age: e.target.value })
+                        }
+                        className="bg-[#1a1a1a] text-white px-2 py-0.5 border border-[#333] rounded w-16 ml-1"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => updateField('age')}
+                        className="text-[#0FA] ml-1 hover:underline"
+                      >
+                        Save
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <span className="ml-1">{user.age}</span>
+                      <button
+                        type="button"
+                        onClick={() => setIsEditingAge(true)}
+                        className="text-[#0FA] ml-1 hover:underline"
+                      >
+                        Edit
+                      </button>
+                    </>
+                  )}
+                </div>
+
+                {/* Gender */}
+                <div className="flex items-center gap-1">
+                  ⚥ Gender:
+                  {isEditingGender ? (
+                    <>
+                      <select
+                        value={formData.gender}
+                        onChange={(e) =>
+                          setFormData({ ...formData, gender: e.target.value })
+                        }
+                        className="bg-[#1a1a1a] text-white px-2 py-0.5 border border-[#333] rounded ml-1"
+                      >
+                        <option value="">--</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="other">Other</option>
+                      </select>
+                      <button
+                        type="button"
+                        onClick={() => updateField('gender')}
+                        className="text-[#0FA] ml-1 hover:underline"
+                      >
+                        Save
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <span className="ml-1 capitalize">{user.gender}</span>
+                      <button
+                        type="button"
+                        onClick={() => setIsEditingGender(true)}
+                        className="text-[#0FA] ml-1 hover:underline"
+                      >
+                        Edit
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        </motion.div>
+          </motion.div>
+
+          {/* Delete Button */}
+          <button
+            onClick={() => setShowModal(true)}
+            className="bg-red-600 text-white px-5 py-2 rounded-lg font-semibold hover:scale-105 hover:shadow-[0_0_20px_#F00] transition cursor-pointer"
+          >
+            Delete Account
+          </button>
+        </div>
 
         {/* Cards */}
         <motion.div
@@ -374,6 +411,12 @@ const ProfilePage = () => {
           <Heatmap submissions={submissions} />
         </motion.div>
       </div>
+      {showModal && (
+        <DeleteAccountModal
+          onClose={() => setShowModal(false)}
+          onConfirm={handleDeleteAccount}
+        />
+      )}
     </motion.div>
   )
 }

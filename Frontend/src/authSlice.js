@@ -100,6 +100,22 @@ export const logoutUser = createAsyncThunk(
   }
 )
 
+//DELETE ACCOUNT
+export const deleteAccount = createAsyncThunk(
+  'auth/deleteAccount',
+  async (_, { rejectWithValue }) => {
+    try {
+      console.log('🔥 deleteAccount thunk triggered') // ✅
+      const response = await axiosClient.post('/auth/user/delete-account')
+      return response.data
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Delete account failed'
+      )
+    }
+  }
+)
+
 // INITIAL STATE
 const initialState = {
   user: null,
@@ -214,6 +230,22 @@ const authSlice = createSlice({
         state.emailForOTP = ''
       })
       .addCase(logoutUser.rejected, (state, action) => {
+        state.loading = false
+        state.error = action.payload
+        state.isAuthenticated = false
+        state.user = null
+      })
+      // DELETE ACCOUNT
+      .addCase(deleteAccount.pending, (state) => {
+        state.loading = true
+        state.error = null
+      })
+      .addCase(deleteAccount.fulfilled, (state) => {
+        state.loading = false
+        state.isAuthenticated = false
+        state.user = null
+      })
+      .addCase(deleteAccount.rejected, (state, action) => {
         state.loading = false
         state.error = action.payload
         state.isAuthenticated = false

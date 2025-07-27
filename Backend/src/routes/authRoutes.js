@@ -19,6 +19,7 @@ const {
   resendOtp,
   resetPassword,
   forgotPassword,
+  deleteProfile,
 } = userAuthController
 
 authRouter.post('/user/register', registerUser)
@@ -31,6 +32,7 @@ authRouter.post('/logout', userAuthMiddleware, logout)
 authRouter.get('/check-auth', userAuthMiddleware, checkAuth)
 authRouter.patch('/user/update', userAuthMiddleware, updateProfile)
 authRouter.get('/user/profile', userAuthMiddleware, getProfile)
+authRouter.post('/user/delete-account', userAuthMiddleware, deleteProfile)
 
 // ✅ OTP Verification Routes
 authRouter.post('/verify-otp', verifyOtp)

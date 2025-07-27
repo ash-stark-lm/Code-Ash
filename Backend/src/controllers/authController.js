@@ -350,15 +350,32 @@ const logout = async (req, res) => {
 const deleteProfile = async (req, res) => {
   try {
     const userId = req.result._id
-    //userSchema se delete
+
+    // Delete user and their submissions
     await User.findByIdAndDelete(userId)
-    //delete from submission model too
-    Submission.deleteMany({ user: userId }) //delete all submission of that user from db
-    res.status(200).send('Profile Deleted Successfully')
+    await Submission.deleteMany({ user: userId })
+
+    // Get token from cookies
+    const { token } = req.cookies
+    const payload = jwt.decode(token)
+
+    // Block token in Redis until it naturally expires
+    if (token && payload?.exp) {
+      await redisClient.set(`token: ${token}`, 'blocked')
+      await redisClient.expireAt(`token: ${token}`, payload.exp)
+    }
+
+    // Clear token from cookies
+    res.clearCookie('token')
+
+    res.status(200).json({ message: 'Profile deleted successfully' })
   } catch (error) {
-    res.status(500).send(error.message)
+    res
+      .status(500)
+      .json({ message: error.message || 'Failed to delete profile' })
   }
 }
+
 const updateProfile = async (req, res) => {
   try {
     const userId = req.result._id
