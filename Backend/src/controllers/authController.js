@@ -6,19 +6,117 @@ import jwt from 'jsonwebtoken'
 import redisClient from '../config/redis.js'
 import Submission from '../models/submission.js'
 import { OAuth2Client } from 'google-auth-library'
+import Otp from '../models/otp.js'
+import { sendOtpEmail } from '../utils/sendEmail.js'
+import { PendingUser } from '../models/pendingUSer.js'
+
+const sendOtp = async (req, res) => {
+  try {
+    const { emailId, firstName, password } = req.body // Changed username to firstName
+
+    if (!emailId || !firstName || !password) {
+      return res.status(400).json({ message: 'All fields are required' })
+    }
+
+    // Already registered?
+    const existing = await User.findOne({ emailId })
+    if (existing) {
+      return res.status(400).json({ message: 'Email already registered' })
+    }
+
+    // Save pending user (overwrite if already exists)
+    const hashedPassword = await Hashing(password)
+    await PendingUser.findOneAndUpdate(
+      { emailId },
+      { firstName, emailId, password: hashedPassword }, // Changed username to firstName
+      { upsert: true, new: true }
+    )
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString()
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000) // 5 mins
+
+    await Otp.findOneAndDelete({ email: emailId }) // Remove old OTPs
+    await Otp.create({ email: emailId, otp, expiresAt })
+
+    await sendOtpEmail(emailId, otp)
+
+    return res.status(200).json({
+      success: true,
+      message: 'OTP sent. Please verify to complete registration.',
+      emailId,
+    })
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ message: err.message || 'Failed to send OTP' })
+  }
+}
 
 const registerUser = async (req, res) => {
-  //first validate the data sent by user
   try {
     validateUser(req.body)
-    //hash the password using bcrypt
-    req.body.password = await Hashing(req.body.password) //now password is hashed
-    //can't give anyone to become admin even if the user sends role as admin
-    req.body.role = 'user'
-    const user = await User.create(req.body)
+    const { emailId, firstName, password } = req.body // Changed username to firstName
 
-    //jwt token
-    const token = await user.getJWT()
+    if (!emailId || !firstName || !password) {
+      return res.status(400).json({ message: 'All fields are required' })
+    }
+
+    const existing = await User.findOne({ emailId })
+    if (existing) {
+      return res.status(400).json({ message: 'Email already registered' })
+    }
+
+    // Just forward request to sendOtp
+    await sendOtp(req, res) // Let sendOtp handle pending user + otp + email
+  } catch (error) {
+    return res.status(500).json({ message: error.message })
+  }
+}
+
+const verifyOtp = async (req, res) => {
+  // console.log('Received payload:', req.body) // Add this
+  try {
+    const { emailId, otp } = req.body
+
+    if (!emailId || !otp) {
+      return res.status(400).json({ message: 'All fields are required' })
+    }
+
+    const otpEntry = await Otp.findOne({ email: emailId })
+    if (!otpEntry) {
+      return res
+        .status(400)
+        .json({ message: 'OTP not found. Please request again.' })
+    }
+
+    if (Date.now() > new Date(otpEntry.expiresAt).getTime()) {
+      return res.status(400).json({ message: 'OTP expired' })
+    }
+
+    if (otpEntry.otp !== otp) {
+      return res.status(400).json({ message: 'Incorrect OTP' })
+    }
+
+    // Check pending user
+    const pendingUser = await PendingUser.findOne({ emailId })
+    if (!pendingUser) {
+      return res.status(400).json({ message: 'No user found for verification' })
+    }
+
+    // Create actual user with all fields
+    const user = await User.create({
+      firstName: pendingUser.firstName, // Changed username to firstName
+      emailId: pendingUser.emailId,
+      password: pendingUser.password,
+      isVerified: true,
+      role: 'user',
+    })
+
+    // Clean up
+    await PendingUser.deleteOne({ emailId })
+    await Otp.deleteMany({ email: emailId })
+
+    const token = user.getJWT()
     res.cookie('token', token, {
       httpOnly: true,
       secure: true,
@@ -26,20 +124,17 @@ const registerUser = async (req, res) => {
       maxAge: 60 * 60 * 1000, // 1 hour
     })
 
-    const reply = {
-      firstName: user.firstName,
-      emailId: user.emailId,
-      _id: user._id,
-      role: user.role,
-    }
-
-    res.status(201).json({
-      user: reply,
+    return res.status(201).json({
       success: true,
-      message: 'User registered In Successfully',
+      message: 'Email verified and account created.',
+      user: {
+        _id: user._id,
+        emailId: user.emailId,
+        role: user.role,
+      },
     })
   } catch (error) {
-    res.status(400).send(error.message)
+    return res.status(500).json({ message: error.message })
   }
 }
 
@@ -286,4 +381,5 @@ export const userAuthController = {
   updateProfile,
   getProfile,
   googleLogin,
+  verifyOtp,
 }

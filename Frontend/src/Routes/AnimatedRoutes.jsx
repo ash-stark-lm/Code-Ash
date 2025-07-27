@@ -38,6 +38,8 @@ import {
   StackVisualizer,
 } from '../components/Visualizer/index.jsx'
 
+import OtpVerification from '../pages/OtpVerifcation.jsx'
+
 const AnimatedRoutes = () => {
   const location = useLocation()
   const { user, isAuthenticated } = useSelector((state) => state.auth)
@@ -58,6 +60,7 @@ const AnimatedRoutes = () => {
           path="/signup"
           element={isAuthenticated ? <Navigate to="/" /> : <SignUp />}
         />
+        <Route path="/verifyOTP" element={<OtpVerification />} />
         <Route
           path="/problems"
           element={isAuthenticated ? <Problems /> : <Login />}

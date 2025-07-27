@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { TypeAnimation } from 'react-type-animation'
-import { Link, useNavigate } from 'react-router'
+import { Link, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -10,15 +10,14 @@ import { useDispatch, useSelector } from 'react-redux'
 import { registerUser } from '../authSlice'
 import GoogleLoginButton from '../components/GoogleLogin.jsx'
 import { googleLogin } from '../authSlice.js'
+import { toast } from 'react-toastify'
 
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{8,}$/
 
 const signupSchema = z
   .object({
     firstName: z.string().min(3, 'First name must be at least 3 characters'),
-
-    emailId: z.string().email('Invalid email address'),
-
+    emailId: z.email('Invalid email address'),
     password: z
       .string()
       .min(8, 'Password must be at least 8 characters')
@@ -26,7 +25,6 @@ const signupSchema = z
         passwordRegex,
         'Password must include one uppercase letter, one lowercase letter, and one symbol'
       ),
-
     confirmPassword: z.string().min(8, 'Confirm your password'),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -37,7 +35,7 @@ const signupSchema = z
 const SignUp = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
-  const { isAuthenticated, loading, error } = useSelector((state) => state.auth)
+  const { isAuthenticated, loading } = useSelector((state) => state.auth)
 
   const {
     register,
@@ -56,8 +54,30 @@ const SignUp = () => {
       navigate('/')
     }
   }, [isAuthenticated, navigate])
-  const onSubmit = (data) => {
-    dispatch(registerUser(data))
+
+  const onSubmit = async (data) => {
+    try {
+      const res = await dispatch(
+        registerUser({
+          firstName: data.firstName,
+          emailId: data.emailId,
+          password: data.password,
+        })
+      ).unwrap()
+
+      if (res.success) {
+        toast.success('OTP sent! Please check your email.')
+        navigate('/verifyOTP', {
+          state: {
+            emailId: data.emailId,
+            firstName: data.firstName, // Changed from username
+            password: data.password,
+          },
+        })
+      }
+    } catch (error) {
+      toast.error(error?.message || 'Registration failed')
+    }
   }
 
   const containerVariants = {
@@ -130,7 +150,6 @@ const SignUp = () => {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.6, ease: 'easeOut' }}
       >
-        {/* Left Form */}
         <div className="p-8 sm:p-10 md:p-12">
           <motion.div
             className="mb-10"
@@ -303,7 +322,6 @@ const SignUp = () => {
           </motion.div>
         </div>
 
-        {/* Right Visuals */}
         <div className="hidden lg:flex relative bg-neutral-900 overflow-hidden items-center justify-center">
           <div className="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full bg-white/10 blur-3xl opacity-20 z-0"></div>
           <div className="absolute z-0 grid grid-cols-3 gap-6">

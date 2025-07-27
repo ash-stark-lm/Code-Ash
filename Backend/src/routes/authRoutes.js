@@ -15,6 +15,7 @@ const {
   updateProfile,
   getProfile,
   googleLogin,
+  verifyOtp,
 } = userAuthController
 
 authRouter.post('/user/register', registerUser)
@@ -27,4 +28,7 @@ authRouter.post('/logout', userAuthMiddleware, logout)
 authRouter.get('/check-auth', userAuthMiddleware, checkAuth)
 authRouter.patch('/user/update', userAuthMiddleware, updateProfile)
 authRouter.get('/user/profile', userAuthMiddleware, getProfile)
+
+// ✅ OTP Verification Routes
+authRouter.post('/verify-otp', verifyOtp)
 export default authRouter
