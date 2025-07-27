@@ -11,7 +11,6 @@ export const registerUser = createAsyncThunk(
         firstName: userData.firstName,
         emailId: userData.emailId,
         password: userData.password,
-        // Don't send age/gender at registration stage
       })
       return response.data
     } catch (error) {
@@ -51,7 +50,9 @@ export const loginUser = createAsyncThunk(
       const response = await axiosClient.post('/auth/login', credentials)
       return response.data.user
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Login failed')
+      return rejectWithValue(
+        error.response?.data?.message || 'Invalid Credentials'
+      )
     }
   }
 )

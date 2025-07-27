@@ -12,6 +12,7 @@ import LoadingOverlay from '../components/LoadingOverlay.jsx'
 import GoogleLoginButton from '../components/GoogleLogin.jsx'
 import { googleLogin } from '../authSlice.js'
 import GridGlow from '../components/GridGlow.jsx'
+import { toast } from 'react-toastify'
 
 // Schema Validation
 const loginSchema = z.object({
@@ -38,8 +39,14 @@ const Login = () => {
       navigate('/')
     }
   }, [isAuthenticated, navigate])
-  const onSubmit = (data) => {
-    dispatch(loginUser(data))
+  const onSubmit = async (data) => {
+    try {
+      await dispatch(loginUser(data)).unwrap()
+      // ✅ Optionally show a success toast
+      // toast.success('Login successful')
+    } catch (err) {
+      toast.error(err || 'Invalid email or password')
+    }
   }
 
   const containerVariants = {
