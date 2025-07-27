@@ -308,13 +308,13 @@ Explanation: nums[0] + nums[1] = 2 + 7 = 9`}
         </div>
 
         {/* Spline Animation */}
-        <div className="flex-1 max-w-lg w-full h-[500px] mt-12 lg:mt-0">
+        <div className="flex-1 max-w-lg w-full h-[500px] mt-12 lg:mt-0 overflow-hidden rounded-xl">
           <iframe
             src="https://my.spline.design/particleaibrain-SMMvQLAgQ7bTvzGKWUOjOvdD/"
             frameBorder="0"
-            width="100%"
-            height="100%"
-            className="rounded-xl"
+            width="120%" // intentionally more than 100%
+            height="120%"
+            className="transform scale-[1] -translate-y-10 -translate-x-10"
           ></iframe>
         </div>
       </section>

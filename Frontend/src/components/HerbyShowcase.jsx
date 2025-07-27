@@ -31,8 +31,10 @@ export default function HerbyShowcase() {
       </div>
 
       {/* Right Spline Robot Animation */}
-      <div className="flex-1 w-full h-[300px] md:h-[350px] overflow-hidden rounded-lg">
-        <Spline scene="https://prod.spline.design/XcvMBtDVfLe0kPWa/scene.splinecode" />
+      <div className="flex-1 w-full h-[300px] md:h-[350px] overflow-hidden rounded-lg relative">
+        <div className="absolute top-0 left-0 w-[120%] h-[120%] transform scale-[1.1] -translate-x-10 -translate-y-1 pointer-events-auto">
+          <Spline scene="https://prod.spline.design/XcvMBtDVfLe0kPWa/scene.splinecode" />
+        </div>
       </div>
     </section>
   )
