@@ -21,7 +21,6 @@ const transformSubmissionsToHeatmap = (submissions) => {
 
 const Heatmap = ({ submissions }) => {
   const values = transformSubmissionsToHeatmap(submissions)
-  console.log('🔥 Heatmap Values:', values)
 
   return (
     <div className="bg-[#111] p-4 rounded-xl border border-[#222] mt-6">

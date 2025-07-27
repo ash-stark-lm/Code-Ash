@@ -17,7 +17,6 @@ const HomePage = function () {
   const [selectedLang, setSelectedLang] = useState('cpp')
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const profileRef = useRef()
-  console.log('re render')
 
   useEffect(() => {
     const handleClickOutside = (e) => {
