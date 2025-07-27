@@ -1,5 +1,5 @@
 // src/components/HerbyShowcase.jsx
-import React from 'react'
+import React, { Suspense } from 'react'
 import { Link } from 'react-router'
 import Spline from '@splinetool/react-spline'
 
@@ -32,9 +32,41 @@ export default function HerbyShowcase() {
 
       {/* Right Spline Robot Animation */}
       <div className="flex-1 w-full h-[300px] md:h-[350px] overflow-hidden rounded-lg relative">
-        <div className="absolute top-0 left-0 w-[120%] h-[120%] transform scale-[1.1] -translate-x-10 -translate-y-1 pointer-events-auto">
-          <Spline scene="https://prod.spline.design/XcvMBtDVfLe0kPWa/scene.splinecode" />
-        </div>
+        <Suspense
+          fallback={
+            <div className="w-full h-full flex items-center justify-center">
+              <div className="flex flex-col items-center gap-3 text-[#0FA]">
+                <svg
+                  className="animate-spin h-8 w-8 text-[#0FA]"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                  ></path>
+                </svg>
+                <p className="text-sm font-medium animate-pulse">
+                  Loading Herby...
+                </p>
+              </div>
+            </div>
+          }
+        >
+          <div className="absolute top-0 left-0 w-[120%] h-[120%] transform scale-[1.1] -translate-x-10 -translate-y-1 pointer-events-auto">
+            <Spline scene="https://prod.spline.design/XcvMBtDVfLe0kPWa/scene.splinecode" />
+          </div>
+        </Suspense>
       </div>
     </section>
   )

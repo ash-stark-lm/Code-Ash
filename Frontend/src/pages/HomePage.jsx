@@ -191,11 +191,7 @@ const HomePage = function () {
         </motion.div>
       </section>
 
-      <Suspense
-        fallback={<div className="text-center py-10">Loading Herby...</div>}
-      >
-        <HerbyShowcase />
-      </Suspense>
+      <HerbyShowcase />
 
       <section className="p-10 grid grid-cols-1 md:grid-cols-2 gap-10 items-start bg-black/80 rounded-t-xl border-t border-[#1f1f1f] min-h-screen">
         <div className="bg-[#111] p-6 rounded-xl shadow-md border border-[#1f1f1f] h-full flex flex-col justify-between">
