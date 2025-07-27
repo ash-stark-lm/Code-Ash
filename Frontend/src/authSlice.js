@@ -105,7 +105,6 @@ export const deleteAccount = createAsyncThunk(
   'auth/deleteAccount',
   async (_, { rejectWithValue }) => {
     try {
-      console.log('🔥 deleteAccount thunk triggered') // ✅
       const response = await axiosClient.post('/auth/user/delete-account')
       return response.data
     } catch (error) {
