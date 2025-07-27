@@ -489,7 +489,7 @@ export const forgotPassword = async (req, res) => {
     })
 
     // Use environment-specific frontend URL
-    const resetLink = `${process.env.CORS_ORIGIN_TEST}/reset-password/${token}`
+    const resetLink = `${process.env.CORS_ORIGIN}/reset-password/${token}`
 
     // Send HTML email
     await sendResetPasswordEmail(emailId, resetLink)
