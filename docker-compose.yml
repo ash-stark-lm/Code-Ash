@@ -4,8 +4,7 @@ services:
   backend:
     image: ashish7763/codeash-backend
     build: ./Backend
-    ports:
-      - '3000:3000'
+
     env_file:
       - ./Backend/.env
     networks:
@@ -18,8 +17,7 @@ services:
       context: ./Frontend
       args:
         VITE_API_BASE_URL: http://43.204.227.122:3000
-    ports:
-      - '80:80'
+
     networks:
       - app-network
     restart: unless-stopped
