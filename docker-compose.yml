@@ -2,6 +2,7 @@ version: '3.8'
 
 services:
   backend:
+    image: ashish7763/codeash-backend
     build: ./Backend
     ports:
       - '3000:3000'
@@ -12,10 +13,11 @@ services:
     restart: unless-stopped
 
   frontend:
+    image: ashish7763/codeash-frontend
     build:
       context: ./Frontend
       args:
-        VITE_API_BASE_URL: ${VITE_API_BASE_URL}
+        VITE_API_BASE_URL: http://43.204.227.122:3000
     ports:
       - '5173:80'
     networks:
