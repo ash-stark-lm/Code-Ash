@@ -123,7 +123,7 @@ const verifyOtp = async (req, res) => {
       httpOnly: true,
       secure: true,
       sameSite: 'None',
-      maxAge: 60 * 60 * 1000, // 1 hour
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
     })
 
     return res.status(201).json({
