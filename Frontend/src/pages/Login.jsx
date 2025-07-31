@@ -66,17 +66,17 @@ const Login = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-neutral-950 px-4 py-8 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-neutral-950 px-4 py-8 sm:px-6 lg:px-8 relative">
       <AnimatePresence>{loading && <LoadingOverlay />}</AnimatePresence>
       <GridGlow />
       <motion.div
-        className="w-full max-w-7xl bg-neutral-900 rounded-3xl shadow-2xl border border-neutral-800 grid grid-cols-1 lg:grid-cols-2 overflow-hidden"
+        className="w-full max-w-6xl bg-neutral-900 rounded-3xl shadow-2xl border border-neutral-800 grid grid-cols-1 lg:grid-cols-2 overflow-hidden"
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.6, ease: 'easeOut' }}
       >
         {/* Left Form */}
-        <div className="p-6 sm:p-8 md:p-10 lg:p-12">
+        <div className="p-6 sm:p-10 md:p-12">
           <motion.div
             className="mb-8 sm:mb-10"
             initial={{ opacity: 0, y: -20 }}
