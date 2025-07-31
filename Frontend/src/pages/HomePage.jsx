@@ -8,6 +8,7 @@ import { Link } from 'react-router'
 import LoadingOverlay from '../components/LoadingOverlay'
 
 import { TextCursorDemo } from '../components/TextCursorDemo'
+import GridGlow from '../components/GridGlow'
 
 const TypingCodeBlock = lazy(() => import('../components/TypingCodeBlock'))
 const HerbyShowcase = lazy(() => import('../components/HerbyShowcase'))
@@ -41,6 +42,7 @@ const HomePage = function () {
   return (
     <div className="min-h-screen bg-[#0e0e0e] text-white font-sans">
       {/* Navbar */}
+      <GridGlow />
       <nav className="relative z-50 flex justify-between items-center px-8 py-5 border-b border-[#1f1f1f] bg-[#0e0e0e]/80 backdrop-blur">
         <div className="flex items-center gap-2 text-2xl font-semibold">
           <Terminal className="text-[#0FA] drop-shadow-lg" size={28} />
