@@ -136,6 +136,10 @@ const HomePage = function () {
               before
             </li>
             <li>🧠 Instant AI-powered hints & solutions</li>
+            <li>🤖 AI Chatbot for debugging and problem solving</li>
+            <li>🔒 Seamless Google Authentication</li>
+            <li>💸 100% Free — No paywalls, no subscriptions, ever</li>
+            <li>🌐 Fully Open Source — Contribute on GitHub!</li>
           </ul>
         </div>
 
