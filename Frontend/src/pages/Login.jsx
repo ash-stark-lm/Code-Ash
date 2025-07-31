@@ -16,7 +16,7 @@ import { toast } from 'react-toastify'
 
 // Schema Validation
 const loginSchema = z.object({
-  emailId: z.email(),
+  emailId: z.string().email('Invalid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
 })
 
@@ -39,11 +39,10 @@ const Login = () => {
       navigate('/')
     }
   }, [isAuthenticated, navigate])
+
   const onSubmit = async (data) => {
     try {
       await dispatch(loginUser(data)).unwrap()
-      // ✅ Optionally show a success toast
-      // toast.success('Login successful')
     } catch (err) {
       toast.error(err || 'Invalid email or password')
     }
@@ -67,33 +66,33 @@ const Login = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-neutral-950 p-4 overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-neutral-950 px-4 py-8 sm:px-6 lg:px-8">
       <AnimatePresence>{loading && <LoadingOverlay />}</AnimatePresence>
       <GridGlow />
       <motion.div
-        className="w-full max-w-5xl bg-neutral-900 rounded-3xl shadow-2xl border border-neutral-800 grid grid-cols-1 lg:grid-cols-2 overflow-hidden"
+        className="w-full max-w-7xl bg-neutral-900 rounded-3xl shadow-2xl border border-neutral-800 grid grid-cols-1 lg:grid-cols-2 overflow-hidden"
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.6, ease: 'easeOut' }}
       >
         {/* Left Form */}
-        <div className="p-8 sm:p-10 md:p-12">
+        <div className="p-6 sm:p-8 md:p-10 lg:p-12">
           <motion.div
-            className="mb-10"
+            className="mb-8 sm:mb-10"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <div className="flex items-center gap-2 text-2xl font-semibold">
-              <Terminal className="text-[#0FA] drop-shadow-lg" size={28} />
+            <div className="flex items-center gap-2 text-xl sm:text-2xl font-semibold">
+              <Terminal className="text-[#0FA] drop-shadow-lg" size={24} />
               <span>
                 Code<span className="text-[#0FA]">Ash</span>
               </span>
             </div>
-            <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-neutral-300 to-neutral-100 mb-2">
+            <h2 className="text-2xl sm:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-neutral-300 to-neutral-100 mb-2">
               Welcome Back
             </h2>
-            <p className="text-neutral-400">
+            <p className="text-neutral-400 text-sm sm:text-base">
               Ready to continue where you left off?
             </p>
           </motion.div>
@@ -116,7 +115,7 @@ const Login = () => {
                 className="w-full bg-neutral-800 border border-neutral-700 rounded-lg py-3 px-4 text-white focus:ring-2 focus:ring-white"
               />
               {errors.emailId && (
-                <p className="text-red-500 text-sm">Enter a valid email</p>
+                <p className="text-red-500 text-sm">{errors.emailId.message}</p>
               )}
             </motion.div>
 
@@ -145,7 +144,7 @@ const Login = () => {
               </div>
               {errors.password && (
                 <p className="text-red-500 text-sm mt-1">
-                  Password must be 8+ characters
+                  {errors.password.message}
                 </p>
               )}
               <div className="mt-2 text-right">
@@ -213,13 +212,13 @@ const Login = () => {
         </div>
 
         {/* Right Side Visuals */}
-        <div className="hidden lg:flex relative bg-neutral-900 overflow-hidden items-center justify-center">
+        <div className="hidden lg:flex relative bg-neutral-900 overflow-hidden items-center justify-center p-6">
           <div className="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full bg-white/10 blur-3xl opacity-20 z-0" />
           <div className="absolute z-0 grid grid-cols-3 gap-6">
             {[...Array(9)].map((_, i) => (
               <motion.div
                 key={i}
-                className="w-20 h-20 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md shadow-inner"
+                className="w-16 h-16 lg:w-20 lg:h-20 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md shadow-inner"
                 animate={{ opacity: [0.3, 0.7, 0.3] }}
                 transition={{
                   duration: 1.8,
@@ -235,10 +234,10 @@ const Login = () => {
               sequence={['Welcome Back', 2000, '', 1000]}
               wrapper="h3"
               speed={20}
-              className="text-4xl font-bold text-white mb-4"
+              className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-4"
               repeat={Infinity}
             />
-            <p className="text-neutral-400 text-lg mt-2">
+            <p className="text-neutral-400 text-base sm:text-lg mt-2">
               Dive back into code mastery!
             </p>
           </div>

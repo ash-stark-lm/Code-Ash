@@ -7,12 +7,12 @@ import { useNavigate } from 'react-router'
 import { Link } from 'react-router'
 import LoadingOverlay from '../components/LoadingOverlay'
 
-import { TextCursorDemo } from '../components/TextCursorDemo'
 import GridGlow from '../components/GridGlow'
 import { SplashCursor } from '../components/SplashCursor'
 
 const TypingCodeBlock = lazy(() => import('../components/TypingCodeBlock'))
 const HerbyShowcase = lazy(() => import('../components/HerbyShowcase'))
+
 const HomePage = function () {
   const dispatch = useDispatch()
   const navigate = useNavigate()
@@ -41,17 +41,16 @@ const HomePage = function () {
   }
 
   return (
-    <div className="min-h-screen bg-[#0e0e0e] text-white font-sans">
-      {/* Navbar */}
+    <div className="min-h-screen bg-[#0e0e0e] text-white font-sans overflow-x-hidden">
       <GridGlow />
-      <nav className="relative z-50 flex justify-between items-center px-8 py-5 border-b border-[#1f1f1f] bg-[#0e0e0e]/80 backdrop-blur">
-        <div className="flex items-center gap-2 text-2xl font-semibold">
-          <Terminal className="text-[#0FA] drop-shadow-lg" size={28} />
+      <nav className="relative z-50 flex flex-wrap justify-between items-center px-4 sm:px-6 md:px-8 py-4 border-b border-[#1f1f1f] bg-[#0e0e0e]/80 backdrop-blur">
+        <div className="flex items-center gap-2 text-xl sm:text-2xl font-semibold">
+          <Terminal className="text-[#0FA] drop-shadow-lg" size={24} />
           <span>
             Code<span className="text-[#0FA]">Ash</span>
           </span>
         </div>
-        <div className="flex items-center gap-10 text-gray-300">
+        <div className="flex items-center gap-6 sm:gap-10 text-sm sm:text-base text-gray-300">
           <Link to="/problems" className="hover:text-white">
             Problems
           </Link>
@@ -65,24 +64,20 @@ const HomePage = function () {
             <User className="text-white" />
           </button>
           {user?.firstName && (
-            <div className="mt-1 text-xs text-white/70">
+            <div className="mt-1 text-xs text-white/70 text-center">
               {user.firstName.toUpperCase()}
             </div>
           )}
 
           <div className="absolute right-0 mt-2 w-44 bg-[#111] border border-[#333] rounded-lg shadow-xl z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition duration-200">
             {user?.role === 'admin' && (
-              <div className="relative group/admin">
-                <button
-                  onClick={() => {
-                    navigate('/admin')
-                  }}
-                  className="flex items-center w-full px-4 py-2 text-sm text-white hover:bg-[#222] transition cursor-pointer"
-                >
-                  <Settings className="w-4 h-4 mr-2" />
-                  Admin Panel
-                </button>
-              </div>
+              <button
+                onClick={() => navigate('/admin')}
+                className="flex items-center w-full px-4 py-2 text-sm text-white hover:bg-[#222] transition cursor-pointer"
+              >
+                <Settings className="w-4 h-4 mr-2" />
+                Admin Panel
+              </button>
             )}
             <button
               onClick={handleProfile}
@@ -102,41 +97,42 @@ const HomePage = function () {
           </div>
         </div>
       </nav>
+
       <SplashCursor />
-      <section className="relative min-h-screen grid grid-cols-1 md:grid-cols-2 gap-10 items-center p-10 overflow-hidden bg-[#0e0e0e]">
+
+      <section className="relative grid grid-cols-1 lg:grid-cols-2 gap-10 items-center px-4 sm:px-6 md:px-10 py-12 bg-[#0e0e0e]">
         <div className="absolute inset-0 -z-10 pointer-events-none">
-          <div className="absolute top-10 left-10 w-72 h-72 bg-[#0FA] rounded-full blur-3xl opacity-25 animate-pulse" />
-          <div className="absolute bottom-0 right-10 w-96 h-96 bg-[#0FA]/30 rounded-full blur-2xl opacity-20 animate-pulse" />
+          <div className="absolute top-10 left-10 w-52 sm:w-72 h-52 sm:h-72 bg-[#0FA] rounded-full blur-3xl opacity-25 animate-pulse" />
+          <div className="absolute bottom-0 right-10 w-72 sm:w-96 h-72 sm:h-96 bg-[#0FA]/30 rounded-full blur-2xl opacity-20 animate-pulse" />
         </div>
 
         <div className="flex flex-col gap-6 z-10">
-          <div className="flex items-center gap-3">
-            <div className="w-6 h-6 bg-[#0FA] rounded-md shadow-lg shadow-[#0FA]/50" />
-            <span className="text-sm px-3 py-1 border border-[#0FA] text-[#0FA] rounded-full bg-white/5 backdrop-blur">
+          <div className="flex items-center gap-3 flex-wrap text-sm">
+            <div className="w-4 h-4 sm:w-6 sm:h-6 bg-[#0FA] rounded-md shadow-lg shadow-[#0FA]/50" />
+            <span className="px-3 py-1 border border-[#0FA] text-[#0FA] rounded-full bg-white/5 backdrop-blur">
               Latest Updates
             </span>
-            <span className="text-gray-400 text-sm">New algorithms added</span>
+            <span className="text-gray-400">New algorithms added</span>
           </div>
 
-          <h1 className="text-5xl md:text-6xl font-bold leading-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
             Master <span className="text-[#0FA]">Data</span>
             <br />
             Structures & <br />
             <span className="text-[#0FA]">Algorithms</span>
           </h1>
 
-          <p className="text-gray-400 text-lg mt-2">
+          <p className="text-gray-400 text-base sm:text-lg mt-2">
             Practice, visualize, and master coding challenges.
           </p>
 
-          <ul className="text-sm text-gray-400 space-y-2 mt-4">
+          <ul className="text-sm sm:text-base text-gray-400 space-y-2 mt-4">
             <li>✅ Track your Progress</li>
             <li>
               ⚡ Visualize algorithms with step-by-step animations like never
               before
             </li>
             <li>🤖 AI Chatbot for debugging and problem solving</li>
-
             <li>💸 100% Free — No paywalls, no subscriptions, ever</li>
             <li>🌐 Fully Open Source — Contribute on GitHub!</li>
           </ul>
@@ -154,7 +150,7 @@ const HomePage = function () {
             opacity: { duration: 0.8 },
             y: { duration: 0.8 },
           }}
-          className="relative w-full max-w bg-[#0e1a1a] border border-[#0FA]/20 rounded-xl shadow-lg overflow-hidden z-10 
+          className="relative w-full max-w-full bg-[#0e1a1a] border border-[#0FA]/20 rounded-xl shadow-lg overflow-x-auto z-10 
              hover:shadow-[0_0_60px_#0FA] transition-all duration-400"
         >
           <div className="flex items-center gap-2 p-3 bg-[#122222] border-b border-[#0FA]/10">
@@ -163,7 +159,7 @@ const HomePage = function () {
             <div className="w-3 h-3 bg-green-500 rounded-full"></div>
           </div>
 
-          <pre className="p-4 text-sm font-mono text-white leading-relaxed">
+          <pre className="p-3 sm:p-4 text-xs sm:text-sm font-mono text-white leading-relaxed overflow-x-auto">
             <code>
               <span className="text-green-400"># Two Sum Problem</span>
               {'\n'}
@@ -195,18 +191,20 @@ const HomePage = function () {
           </pre>
         </motion.div>
       </section>
+
       <HerbyShowcase />
-      <section className="p-10 grid grid-cols-1 md:grid-cols-2 gap-10 items-start bg-black/80 rounded-t-xl border-t border-[#1f1f1f] min-h-screen">
-        <div className="bg-[#111] p-6 rounded-xl shadow-md border border-[#1f1f1f] h-full flex flex-col justify-between">
+
+      <section className="p-4 sm:p-6 md:p-10 grid grid-cols-1 md:grid-cols-2 gap-6 min-h-screen bg-black/80 rounded-t-xl border-t border-[#1f1f1f]">
+        <div className="bg-[#111] p-4 sm:p-6 rounded-xl shadow-md border border-[#1f1f1f] flex flex-col justify-between">
           <div>
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold">1. Two Sum</h2>
+              <h2 className="text-lg sm:text-xl font-semibold">1. Two Sum</h2>
               <span className="text-green-400 bg-green-900/40 px-2 py-0.5 rounded-full text-sm">
                 Easy
               </span>
             </div>
 
-            <div className="flex items-center gap-4 text-xs text-gray-400 mb-4">
+            <div className="flex flex-wrap items-center gap-4 text-xs text-gray-400 mb-4">
               <span>🕒 15 min</span>
               <span>🧠 O(n)</span>
               <span>⚡ O(n)</span>
@@ -215,8 +213,8 @@ const HomePage = function () {
             <div className="text-sm text-gray-300 leading-relaxed space-y-4">
               <p>
                 Given an array of integers <code className="px-1">nums</code>{' '}
-                and an integer <code className="px-1">target</code>, return{' '}
-                indices of the two numbers such that they add up to target .
+                and an integer <code className="px-1">target</code>, return
+                indices of the two numbers such that they add up to target.
               </p>
 
               <p>
@@ -226,8 +224,8 @@ const HomePage = function () {
               </p>
 
               <div>
-                <p className="font-semibold text-white mb-5">Example 1:</p>
-                <pre className="bg-[#111] p-3 rounded text-sm text-gray-300 border border-[#333]">
+                <p className="font-semibold text-white mb-3">Example 1:</p>
+                <pre className="bg-[#111] p-3 rounded text-sm text-gray-300 border border-[#333] overflow-x-auto">
                   {`Input: nums = [2, 7, 11, 15], target = 9
 Output: [0, 1]
 Explanation: nums[0] + nums[1] = 2 + 7 = 9`}
@@ -247,8 +245,8 @@ Explanation: nums[0] + nums[1] = 2 + 7 = 9`}
           </div>
         </div>
 
-        <div className="bg-[#111] p-6 rounded-xl shadow-md border border-[#1f1f1f] h-full flex flex-col justify-between">
-          <div className="flex justify-between mb-2 text-gray-400 text-sm ml-4">
+        <div className="bg-[#111] p-4 sm:p-6 rounded-xl shadow-md border border-[#1f1f1f] flex flex-col">
+          <div className="flex justify-between mb-2 text-gray-400 text-sm ml-2">
             <span>
               {selectedLang === 'cpp'
                 ? 'solution.cpp'
@@ -270,29 +268,26 @@ Explanation: nums[0] + nums[1] = 2 + 7 = 9`}
           </div>
         </div>
       </section>
-      <section className="bg-[#0e0e0e] text-white py-20 px-6 flex flex-col lg:flex-row items-center justify-between lg:space-x-16 max-w-7xl mx-auto">
-        {/* Left Text */}
-        <div className="flex-1 flex flex-col items-center lg:items-start text-center lg:text-left space-y-6 max-w-2xl -ml-20">
-          {/* Glowing "Must Try" Badge */}
+
+      <section className="bg-[#0e0e0e] text-white py-16 sm:py-20 px-4 sm:px-6 md:px-10 flex flex-col lg:flex-row items-center justify-between lg:space-x-16 max-w-7xl mx-auto">
+        <div className="flex-1 flex flex-col items-center lg:items-start text-center lg:text-left space-y-6 max-w-2xl">
           <div className="bg-[#0FA] text-black text-sm font-bold px-4 py-1 rounded-full shadow-xl uppercase tracking-wide animate-bounce">
             🔥 Must Try Feature
           </div>
 
-          <h2 className="text-4xl md:text-5xl font-bold leading-tight">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight">
             Visualize <span className="text-[#0FA]">DSA</span> Like Never Before
           </h2>
 
-          <p className="text-gray-400 text-lg">
+          <p className="text-gray-400 text-base sm:text-lg">
             Experience step-by-step algorithm visualizations designed to help
             you understand{' '}
             <span className="text-white font-medium">Arrays</span>,{' '}
             <span className="text-white font-medium">Graphs</span>,{' '}
-            <span className="text-white font-medium">Trees</span> and more. Our
-            visualizer brings complex logic to life with animations and
-            interactivity.
+            <span className="text-white font-medium">Trees</span> and more.
           </p>
 
-          <ul className="text-sm text-gray-400 space-y-2 w-full lg:w-auto">
+          <ul className="text-sm sm:text-base text-gray-400 space-y-2">
             <li>🧩 See how arrays, stacks, and trees evolve in real-time</li>
             <li>📈 Control animation speed, pause/play each step</li>
             <li>💡 Integrated pseudocode with logic explanations</li>
@@ -307,14 +302,12 @@ Explanation: nums[0] + nums[1] = 2 + 7 = 9`}
           </button>
         </div>
 
-        {/* Spline Animation */}
-        <div className="flex-1 max-w-lg w-full h-[500px] mt-12 lg:mt-0 overflow-hidden rounded-xl">
+        <div className="flex-1 w-full h-[300px] sm:h-[400px] md:h-[500px] mt-12 lg:mt-0 overflow-hidden rounded-xl relative">
           <iframe
             src="https://my.spline.design/particleaibrain-SMMvQLAgQ7bTvzGKWUOjOvdD/"
             frameBorder="0"
-            width="120%" // intentionally more than 100%
-            height="120%"
-            className="transform scale-[1] -translate-y-10 -translate-x-10"
+            className="absolute w-full h-full top-0 left-0 scale-[1.2]"
+            title="Spline Visualization"
           ></iframe>
         </div>
       </section>

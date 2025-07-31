@@ -145,15 +145,7 @@ export default function TypingCodeBlock({ lang, setLang }) {
   }, [lang])
 
   return (
-    <div
-      className="bg-gradient-to-br from-[#0FA]/10 to-black p-6 rounded-xl border border-[#0FA]/20 shadow-xl backdrop-blur-lg transition duration-300 ease-in-out hover:shadow-[0_0_60px_#0FA] ml-4"
-      style={{
-        width: 620,
-        height: 550,
-        display: 'flex',
-        flexDirection: 'column',
-      }}
-    >
+    <div className="bg-gradient-to-br from-[#0FA]/10 to-black p-4 sm:p-6 md:p-8 rounded-xl border border-[#0FA]/20 shadow-xl backdrop-blur-lg transition duration-300 ease-in-out hover:shadow-[0_0_60px_#0FA] mx-auto w-full max-w-[620px] h-auto sm:h-[550px]">
       {/* Three dots bar */}
       <div className="flex space-x-2 mb-4">
         <span className="w-3 h-3 rounded-full bg-red-500" />
@@ -162,7 +154,7 @@ export default function TypingCodeBlock({ lang, setLang }) {
       </div>
 
       {/* Dropdown with mapped display */}
-      <div className="flex justify-end mb-4 to-black">
+      <div className="flex justify-end mb-4">
         <Dropdown
           label=""
           options={['C++', 'Java', 'Python']}
@@ -175,14 +167,8 @@ export default function TypingCodeBlock({ lang, setLang }) {
 
       {/* Animated Code Display */}
       <pre
-        className="text-sm font-mono text-white leading-relaxed overflow-auto custom-scrollbar"
-        style={{
-          width: '600px',
-          height: '340px',
-          whiteSpace: 'pre-wrap',
-          margin: 0,
-          flexGrow: 1,
-        }}
+        className="text-sm font-mono text-white leading-relaxed overflow-auto custom-scrollbar w-full max-w-full h-[300px] sm:h-[340px]"
+        style={{ whiteSpace: 'pre-wrap', margin: 0 }}
       >
         {flat.slice(0, visible).map((c, i) => (
           <span key={i} className={c.color}>

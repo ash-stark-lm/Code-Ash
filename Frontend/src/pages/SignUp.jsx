@@ -71,7 +71,7 @@ const SignUp = () => {
         navigate('/verifyOTP', {
           state: {
             emailId: data.emailId,
-            firstName: data.firstName, // Changed from username
+            firstName: data.firstName,
             password: data.password,
           },
         })
@@ -144,32 +144,34 @@ const SignUp = () => {
   )
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-neutral-950 p-4 overflow-hidden relative">
+    <div className="min-h-screen flex items-center justify-center bg-neutral-950 px-4 sm:px-6 lg:px-8 overflow-hidden relative">
       <AnimatePresence>{loading && <LoadingOverlay />}</AnimatePresence>
       <GridGlow />
       <motion.div
-        className="w-full max-w-5xl bg-neutral-900 rounded-3xl shadow-2xl border border-neutral-800 grid grid-cols-1 lg:grid-cols-2 overflow-hidden"
+        className="w-full max-w-6xl bg-neutral-900 rounded-3xl shadow-2xl border border-neutral-800 grid grid-cols-1 lg:grid-cols-2 overflow-hidden"
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.6, ease: 'easeOut' }}
       >
-        <div className="p-8 sm:p-10 md:p-12">
+        <div className="p-6 sm:p-10 md:p-12">
           <motion.div
             className="mb-10"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <div className="flex items-center gap-2 text-2xl font-semibold">
+            <div className="flex items-center gap-2 text-xl sm:text-2xl font-semibold">
               <Terminal className="text-[#0FA] drop-shadow-lg" size={28} />
               <span>
                 Code<span className="text-[#0FA]">Ash</span>
               </span>
             </div>
-            <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-neutral-300 to-neutral-100 mb-2">
+            <h2 className="text-2xl sm:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-neutral-300 to-neutral-100 mb-2">
               Create Your Account
             </h2>
-            <p className="text-neutral-400">Join our community of coders</p>
+            <p className="text-neutral-400 text-sm sm:text-base">
+              Join our community of coders
+            </p>
           </motion.div>
 
           <motion.form
@@ -325,13 +327,13 @@ const SignUp = () => {
           </motion.div>
         </div>
 
-        <div className="hidden lg:flex relative bg-neutral-900 overflow-hidden items-center justify-center">
+        <div className="hidden lg:flex relative bg-neutral-900 overflow-hidden items-center justify-center p-6">
           <div className="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full bg-white/10 blur-3xl opacity-20 z-0"></div>
           <div className="absolute z-0 grid grid-cols-3 gap-6">
             {[...Array(9)].map((_, i) => (
               <motion.div
                 key={i}
-                className="w-20 h-20 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md shadow-inner"
+                className="w-16 h-16 md:w-20 md:h-20 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md shadow-inner"
                 animate={{ opacity: [0.3, 0.7, 0.3] }}
                 transition={{
                   duration: 1.8,
@@ -347,10 +349,10 @@ const SignUp = () => {
               sequence={['Hello, there', 2000, '', 1000]}
               wrapper="h3"
               speed={20}
-              className="text-4xl font-bold text-white mb-4"
+              className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-4"
               repeat={Infinity}
             />
-            <p className="text-neutral-400 text-lg mt-2">
+            <p className="text-neutral-400 text-sm sm:text-base md:text-lg mt-2">
               Be a part of our community
             </p>
           </div>
