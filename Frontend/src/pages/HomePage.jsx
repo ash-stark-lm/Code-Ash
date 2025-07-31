@@ -9,6 +9,7 @@ import LoadingOverlay from '../components/LoadingOverlay'
 
 import { TextCursorDemo } from '../components/TextCursorDemo'
 import GridGlow from '../components/GridGlow'
+import { SplashCursor } from '../components/SplashCursor'
 
 const TypingCodeBlock = lazy(() => import('../components/TypingCodeBlock'))
 const HerbyShowcase = lazy(() => import('../components/HerbyShowcase'))
@@ -101,7 +102,7 @@ const HomePage = function () {
           </div>
         </div>
       </nav>
-      <TextCursorDemo />
+      <SplashCursor />
       <section className="relative min-h-screen grid grid-cols-1 md:grid-cols-2 gap-10 items-center p-10 overflow-hidden bg-[#0e0e0e]">
         <div className="absolute inset-0 -z-10 pointer-events-none">
           <div className="absolute top-10 left-10 w-72 h-72 bg-[#0FA] rounded-full blur-3xl opacity-25 animate-pulse" />
