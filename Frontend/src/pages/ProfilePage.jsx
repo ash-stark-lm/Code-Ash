@@ -188,7 +188,7 @@ const ProfilePage = () => {
       >
         <button
           onClick={() => navigate(-1)}
-          className="absolute right-2 top-2 sm:right-4 sm:top-4 bg-[#0FA] text-black px-3 py-1 sm:px-5 sm:py-2 rounded-lg font-semibold hover:scale-105 hover:shadow-[0_0_20px_#0FA] transition"
+          className=" hidden sm:block absolute right-2 top-2 sm:right-4 sm:top-4 bg-[#0FA] text-black px-3 py-1 sm:px-5 sm:py-2 rounded-lg font-semibold hover:scale-105 hover:shadow-[0_0_20px_#0FA] transition"
         >
           <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
         </button>

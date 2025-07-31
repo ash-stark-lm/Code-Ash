@@ -126,7 +126,7 @@ const HomePage = function () {
 
         {/* Mobile Menu - Only shows when toggled */}
         {isMobileMenuOpen && (
-          <div className="md:hidden absolute top-full left-0 right-0 bg-[#0e0e0e] border-t border-[#1f1f1f] px-4 py-3">
+          <div className="lg:hidden absolute top-full left-0 right-0 bg-[#0e0e0e] border-t border-[#1f1f1f] px-4 py-3">
             <div className="flex flex-col space-y-4">
               <Link
                 to="/problems"
