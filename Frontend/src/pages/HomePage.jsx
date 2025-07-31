@@ -6,7 +6,8 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router'
 import { Link } from 'react-router'
 import LoadingOverlay from '../components/LoadingOverlay'
-import GridGlow from '../components/GridGlow'
+
+import { TextCursorDemo } from '../components/TextCursorDemo'
 
 const TypingCodeBlock = lazy(() => import('../components/TypingCodeBlock'))
 const HerbyShowcase = lazy(() => import('../components/HerbyShowcase'))
@@ -39,7 +40,6 @@ const HomePage = function () {
 
   return (
     <div className="min-h-screen bg-[#0e0e0e] text-white font-sans">
-      <GridGlow />
       {/* Navbar */}
       <nav className="relative z-50 flex justify-between items-center px-8 py-5 border-b border-[#1f1f1f] bg-[#0e0e0e]/80 backdrop-blur">
         <div className="flex items-center gap-2 text-2xl font-semibold">
@@ -99,7 +99,7 @@ const HomePage = function () {
           </div>
         </div>
       </nav>
-
+      <TextCursorDemo />
       <section className="relative min-h-screen grid grid-cols-1 md:grid-cols-2 gap-10 items-center p-10 overflow-hidden bg-[#0e0e0e]">
         <div className="absolute inset-0 -z-10 pointer-events-none">
           <div className="absolute top-10 left-10 w-72 h-72 bg-[#0FA] rounded-full blur-3xl opacity-25 animate-pulse" />
@@ -189,9 +189,7 @@ const HomePage = function () {
           </pre>
         </motion.div>
       </section>
-
       <HerbyShowcase />
-
       <section className="p-10 grid grid-cols-1 md:grid-cols-2 gap-10 items-start bg-black/80 rounded-t-xl border-t border-[#1f1f1f] min-h-screen">
         <div className="bg-[#111] p-6 rounded-xl shadow-md border border-[#1f1f1f] h-full flex flex-col justify-between">
           <div>
@@ -266,7 +264,6 @@ Explanation: nums[0] + nums[1] = 2 + 7 = 9`}
           </div>
         </div>
       </section>
-
       <section className="bg-[#0e0e0e] text-white py-20 px-6 flex flex-col lg:flex-row items-center justify-between lg:space-x-16 max-w-7xl mx-auto">
         {/* Left Text */}
         <div className="flex-1 flex flex-col items-center lg:items-start text-center lg:text-left space-y-6 max-w-2xl -ml-20">
