@@ -13,7 +13,6 @@ const TextCursorDemo = () => {
         removalInterval={25}
         maxPoints={15}
       />
-      <h1 className="text-4xl z-10">Move your mouse around 🖱️</h1>
     </div>
   )
 }
