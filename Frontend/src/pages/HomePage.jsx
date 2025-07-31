@@ -19,6 +19,7 @@ const HomePage = function () {
   const { user } = useSelector((state) => state.auth)
   const [selectedLang, setSelectedLang] = useState('cpp')
   const [isProfileOpen, setIsProfileOpen] = useState(false)
+
   const profileRef = useRef()
 
   useEffect(() => {
@@ -27,9 +28,13 @@ const HomePage = function () {
         setIsProfileOpen(false)
       }
     }
+
     document.addEventListener('mousedown', handleClickOutside)
+    document.addEventListener('touchstart', handleClickOutside)
+
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('touchstart', handleClickOutside)
     }
   }, [])
 
@@ -59,42 +64,65 @@ const HomePage = function () {
           </Link>
         </div>
 
-        <div className="relative group">
-          <button className="p-2 rounded-full hover:bg-white/10 transition cursor-pointer">
+        <div ref={profileRef} className="relative">
+          <button
+            className="p-2 rounded-full hover:bg-white/10 transition cursor-pointer"
+            onClick={() => setIsProfileOpen((prev) => !prev)}
+          >
             <User className="text-white" />
           </button>
+
           {user?.firstName && (
             <div className="mt-1 text-xs text-white/70 text-center">
               {user.firstName.toUpperCase()}
             </div>
           )}
 
-          <div className="absolute right-0 mt-2 w-44 bg-[#111] border border-[#333] rounded-lg shadow-xl z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition duration-200">
-            {user?.role === 'admin' && (
-              <button
-                onClick={() => navigate('/admin')}
-                className="flex items-center w-full px-4 py-2 text-sm text-white hover:bg-[#222] transition cursor-pointer"
-              >
-                <Settings className="w-4 h-4 mr-2" />
-                Admin Panel
-              </button>
-            )}
-            <button
-              onClick={handleProfile}
-              className="flex items-center w-full px-4 py-2 text-sm text-white hover:bg-[#222] transition cursor-pointer"
+          {isProfileOpen && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.2 }}
+              className="absolute right-0 mt-2 w-44 bg-[#111] border border-[#333] rounded-lg shadow-xl z-50"
+              style={{ minHeight: '120px' }}
             >
-              <UserPen className="w-4 h-4 mr-2" />
-              View Profile
-            </button>
+              {user?.role === 'admin' && (
+                <button
+                  onClick={() => {
+                    setIsProfileOpen(false)
+                    navigate('/admin')
+                  }}
+                  className="flex items-center w-full px-4 py-2 text-sm text-white hover:bg-[#222] transition"
+                >
+                  <Settings className="w-4 h-4 mr-2" />
+                  Admin Panel
+                </button>
+              )}
 
-            <button
-              onClick={handleLogout}
-              className="flex items-center w-full px-4 py-2 text-sm text-white hover:bg-[#222] transition cursor-pointer"
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              Logout
-            </button>
-          </div>
+              <button
+                onClick={() => {
+                  setIsProfileOpen(false)
+                  handleProfile()
+                }}
+                className="flex items-center w-full px-4 py-2 text-sm text-white hover:bg-[#222] transition"
+              >
+                <UserPen className="w-4 h-4 mr-2" />
+                View Profile
+              </button>
+
+              <button
+                onClick={() => {
+                  setIsProfileOpen(false)
+                  handleLogout()
+                }}
+                className="flex items-center w-full px-4 py-2 text-sm text-white hover:bg-[#222] transition"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Logout
+              </button>
+            </motion.div>
+          )}
         </div>
       </nav>
 
