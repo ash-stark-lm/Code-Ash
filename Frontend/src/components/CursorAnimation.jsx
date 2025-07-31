@@ -12,15 +12,12 @@ const TextCursor = ({
   maxPoints = 5,
 }) => {
   const [trail, setTrail] = useState([])
-  const containerRef = useRef(null)
   const lastMoveTimeRef = useRef(Date.now())
   const idCounter = useRef(0)
 
   const handleMouseMove = (e) => {
-    if (!containerRef.current) return
-    const rect = containerRef.current.getBoundingClientRect()
-    const mouseX = e.clientX - rect.left
-    const mouseY = e.clientY - rect.top
+    const mouseX = e.clientX
+    const mouseY = e.clientY
 
     setTrail((prev) => {
       let newTrail = [...prev]
@@ -74,10 +71,8 @@ const TextCursor = ({
   }
 
   useEffect(() => {
-    const container = containerRef.current
-    if (!container) return
-    container.addEventListener('mousemove', handleMouseMove)
-    return () => container.removeEventListener('mousemove', handleMouseMove)
+    window.addEventListener('mousemove', handleMouseMove)
+    return () => window.removeEventListener('mousemove', handleMouseMove)
   }, [spacing, followMouseDirection, randomFloat, maxPoints, text])
 
   useEffect(() => {
@@ -90,58 +85,56 @@ const TextCursor = ({
   }, [removalInterval])
 
   return (
-    <div ref={containerRef} className="w-full h-full relative">
-      <div className="absolute inset-0 pointer-events-none">
-        <AnimatePresence>
-          {trail.map((item) => (
-            <motion.div
-              key={item.id}
-              initial={{ opacity: 0, scale: 1, x: 0, y: 0, rotate: item.angle }}
-              animate={{
-                opacity: 1,
-                scale: 1,
-                x: randomFloat ? [0, item.randomX || 0, 0] : 0,
-                y: randomFloat ? [0, item.randomY || 0, 0] : 0,
-                rotate: randomFloat
-                  ? [
-                      item.angle,
-                      item.angle + (item.randomRotate || 0),
-                      item.angle,
-                    ]
-                  : item.angle,
-              }}
-              exit={{ opacity: 0, scale: 0 }}
-              transition={{
-                opacity: { duration: exitDuration, ease: 'easeOut', delay },
-                ...(randomFloat && {
-                  x: {
-                    duration: 2,
-                    ease: 'easeInOut',
-                    repeat: Infinity,
-                    repeatType: 'mirror',
-                  },
-                  y: {
-                    duration: 2,
-                    ease: 'easeInOut',
-                    repeat: Infinity,
-                    repeatType: 'mirror',
-                  },
-                  rotate: {
-                    duration: 2,
-                    ease: 'easeInOut',
-                    repeat: Infinity,
-                    repeatType: 'mirror',
-                  },
-                }),
-              }}
-              className="absolute select-none whitespace-nowrap text-3xl"
-              style={{ left: item.x, top: item.y }}
-            >
-              {text}
-            </motion.div>
-          ))}
-        </AnimatePresence>
-      </div>
+    <div className="fixed inset-0 pointer-events-none z-[9999]">
+      <AnimatePresence>
+        {trail.map((item) => (
+          <motion.div
+            key={item.id}
+            initial={{ opacity: 0, scale: 1, x: 0, y: 0, rotate: item.angle }}
+            animate={{
+              opacity: 1,
+              scale: 1,
+              x: randomFloat ? [0, item.randomX || 0, 0] : 0,
+              y: randomFloat ? [0, item.randomY || 0, 0] : 0,
+              rotate: randomFloat
+                ? [
+                    item.angle,
+                    item.angle + (item.randomRotate || 0),
+                    item.angle,
+                  ]
+                : item.angle,
+            }}
+            exit={{ opacity: 0, scale: 0 }}
+            transition={{
+              opacity: { duration: exitDuration, ease: 'easeOut', delay },
+              ...(randomFloat && {
+                x: {
+                  duration: 2,
+                  ease: 'easeInOut',
+                  repeat: Infinity,
+                  repeatType: 'mirror',
+                },
+                y: {
+                  duration: 2,
+                  ease: 'easeInOut',
+                  repeat: Infinity,
+                  repeatType: 'mirror',
+                },
+                rotate: {
+                  duration: 2,
+                  ease: 'easeInOut',
+                  repeat: Infinity,
+                  repeatType: 'mirror',
+                },
+              }),
+            }}
+            className="absolute select-none whitespace-nowrap text-3xl"
+            style={{ left: item.x, top: item.y }}
+          >
+            {text}
+          </motion.div>
+        ))}
+      </AnimatePresence>
     </div>
   )
 }
