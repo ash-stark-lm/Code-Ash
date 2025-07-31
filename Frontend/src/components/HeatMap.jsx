@@ -9,7 +9,7 @@ const transformSubmissionsToHeatmap = (submissions) => {
   const map = {}
 
   submissions.forEach((sub) => {
-    const day = format(new Date(sub.createdAt), 'yyyy-MM-dd')
+    const day = format(new Date(sub.solvedAt), 'yyyy-MM-dd')
     map[day] = (map[day] || 0) + 1
   })
 

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
+import { useSelector } from 'react-redux'
 import axiosClient from '../utils/axiosClient'
 import { useNavigate } from 'react-router'
 import LoadingOverlay from '../components/LoadingOverlay'
@@ -23,14 +24,14 @@ export default function Problems() {
   const difficultyRef = useRef()
   const tagRef = useRef()
   const navigate = useNavigate()
-
+  const userId = useSelector((state) => state.auth.user?._id)
   const fetchProblems = async () => {
     try {
       setLoading(true)
       const res = await axiosClient.get(
         `/problem?page=${page}&limit=${PAGE_SIZE}`
       )
-      let fetched = res.data.problems
+      let fetched = res.data.problems || []
 
       const tagSet = new Set()
       fetched.forEach((p) => {
@@ -38,7 +39,7 @@ export default function Problems() {
       })
       setAllTags(Array.from(tagSet))
       setAllProblems(fetched)
-      setTotalPages(res.data.totalPages)
+      setTotalPages(res.data.totalPages || 1)
     } catch (err) {
       console.error('Error:', err)
     } finally {
@@ -49,8 +50,13 @@ export default function Problems() {
   useEffect(() => {
     const fetchSolvedProblems = async () => {
       try {
-        const res = await axiosClient.get('/problem/user')
-        const ids = res.data.map((prob) => prob._id)
+        if (!userId) return
+        const res = await axiosClient.get(
+          '/problem/accepted-submissions/${userId}'
+        )
+        console.log(res.data)
+        const solved = Array.isArray(res.data) ? res.data : []
+        const ids = solved.map((prob) => prob._id)
         setSolvedProblemIds(ids)
       } catch (err) {
         console.error('Failed to fetch solved problems', err)
@@ -64,7 +70,6 @@ export default function Problems() {
     fetchProblems()
   }, [page, selectedDifficulty, selectedTag])
 
-  // Client-side filtering for difficulty, tag, and search
   useEffect(() => {
     let filtered = allProblems
 
@@ -109,17 +114,15 @@ export default function Problems() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0e0e0e] text-white px-10 py-10 font-sans">
-      <div className="flex items-center justify-between mb-10 border-b border-[#1f1f1f] pb-4">
-        {/* Left: Heading with Icon */}
-        <h1 className="text-4xl font-bold text-[#0FA] flex items-center gap-2">
+    <div className="min-h-screen bg-[#0e0e0e] text-white px-4 sm:px-6 md:px-10 py-8 font-sans max-w-screen-xl mx-auto overflow-x-hidden">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-10 border-b border-[#1f1f1f] pb-4">
+        <h1 className="text-3xl sm:text-4xl font-bold text-[#0FA] flex items-center gap-2">
           <Book size={28} /> Explore Problems
         </h1>
-
-        {/* Right: Back to Home Button */}
         <button
           onClick={() => navigate('/')}
-          className="flex items-center gap-2 px-4 py-2 bg-white/10 border border-white/20 rounded-lg hover:bg-white/20 transition cursor-pointer text-sm text-white"
+          className="flex items-center gap-2 px-4 py-2 bg-white/10 border border-white/20 rounded-lg hover:bg-white/20 transition text-sm cursor-pointer"
         >
           <ArrowLeft className="w-5 h-5" />
           Back to Home
@@ -127,12 +130,12 @@ export default function Problems() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-6 mb-6">
-        {/* Difficulty Filter Dropdown */}
-        <div className="relative" ref={difficultyRef}>
+      <div className="flex flex-col md:flex-row md:flex-wrap gap-4 md:gap-6 mb-6">
+        {/* Difficulty Filter */}
+        <div className="relative w-full sm:w-auto" ref={difficultyRef}>
           <button
             onClick={() => setShowDifficultyDropdown((prev) => !prev)}
-            className="px-4 py-2 bg-[#111] border border-[#2d2d2d] rounded-lg text-white hover:bg-[#1a1a1a] transition cursor-pointer"
+            className="w-full sm:w-auto px-4 py-2 bg-[#111] border border-[#2d2d2d] rounded-lg hover:bg-[#1a1a1a] transition cursor-pointer"
           >
             Difficulty: {selectedDifficulty}
           </button>
@@ -145,7 +148,7 @@ export default function Problems() {
                     setSelectedDifficulty(d)
                     setShowDifficultyDropdown(false)
                   }}
-                  className="block w-full px-4 py-2 text-left text-sm text-white hover:bg-[#222] transition cursor-pointer"
+                  className="block w-full px-4 py-2 text-left text-sm hover:bg-[#222] cursor-pointer"
                 >
                   {d}
                 </button>
@@ -154,22 +157,22 @@ export default function Problems() {
           )}
         </div>
 
-        {/* Tag Filter Dropdown */}
-        <div className="relative" ref={tagRef}>
+        {/* Tag Filter */}
+        <div className="relative w-full sm:w-auto" ref={tagRef}>
           <button
             onClick={() => setShowTagDropdown((prev) => !prev)}
-            className="px-4 py-2 bg-[#111] border border-[#2d2d2d] rounded-lg text-white hover:bg-[#1a1a1a] transition cursor-pointer"
+            className="w-full sm:w-auto px-4 py-2 bg-[#111] border border-[#2d2d2d] rounded-lg hover:bg-[#1a1a1a] transition cursor-pointer"
           >
             Tag: {selectedTag}
           </button>
           {showTagDropdown && (
-            <div className="absolute mt-2 w-40 bg-[#111] border border-[#333] rounded-lg shadow-xl z-50">
+            <div className="absolute mt-2 w-40 bg-[#111] border border-[#333] rounded-lg shadow-xl z-50 cursor-pointer">
               <button
                 onClick={() => {
                   setSelectedTag('All')
                   setShowTagDropdown(false)
                 }}
-                className="block w-full px-4 py-2 text-left text-sm text-white hover:bg-[#222] transition cursor-pointer"
+                className="block w-full px-4 py-2 text-left text-sm hover:bg-[#222] cursor-pointer"
               >
                 All
               </button>
@@ -180,7 +183,7 @@ export default function Problems() {
                     setSelectedTag(tag)
                     setShowTagDropdown(false)
                   }}
-                  className="block w-full px-4 py-2 text-left text-sm text-white hover:bg-[#222] transition cursor-pointer"
+                  className="block w-full px-4 py-2 text-left text-sm hover:bg-[#222] cursor-pointer"
                 >
                   {tag}
                 </button>
@@ -189,8 +192,8 @@ export default function Problems() {
           )}
         </div>
 
-        {/* 🔍 Search Bar */}
-        <div className="flex-1">
+        {/* Search Bar */}
+        <div className="w-full md:flex-1">
           <input
             type="text"
             placeholder="Search by title..."
@@ -210,10 +213,10 @@ export default function Problems() {
             <div
               key={problem._id}
               onClick={() => handleProblemClick(problem._id)}
-              className="cursor-pointer bg-[#0e1a1a] border border-[#1f1f1f] p-6 rounded-xl hover:border-[#0FA] transition-all"
+              className="cursor-pointer bg-[#0e1a1a] border border-[#1f1f1f] p-4 sm:p-6 rounded-xl hover:border-[#0FA] transition-all"
             >
-              <div className="flex justify-between items-center">
-                <h2 className="text-xl font-semibold flex items-center gap-2">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                <h2 className="text-lg sm:text-xl font-semibold flex items-center gap-2">
                   {idx + 1 + (page - 1) * PAGE_SIZE}. {problem.title}
                   {solvedProblemIds.includes(problem._id) && (
                     <CheckCircle size={18} className="text-green-400" />
@@ -248,7 +251,7 @@ export default function Problems() {
       )}
 
       {/* Pagination */}
-      <div className="mt-6 flex justify-center gap-4 items-center">
+      <div className="mt-6 flex flex-row sm:flex-row justify-center items-center gap-2 sm:gap-4">
         <button
           onClick={() => setPage((p) => Math.max(p - 1, 1))}
           disabled={page === 1}

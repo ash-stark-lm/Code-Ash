@@ -3,6 +3,7 @@ import React, { useState } from 'react'
 const SolvedProblems = ({ problems, onProblemClick }) => {
   const [search, setSearch] = useState('')
   const [selectedDifficulty, setSelectedDifficulty] = useState('All')
+  const [showDifficultyDropdown, setShowDifficultyDropdown] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
 
   const problemsPerPage = 30
@@ -23,13 +24,11 @@ const SolvedProblems = ({ problems, onProblemClick }) => {
     return <div className="text-[#888] mt-6">No solved problems yet.</div>
   }
 
-  // Normalize difficulty and group
   problems.forEach((p) => {
     const normalized = difficultyMap[p.difficulty?.toLowerCase()] || 'Medium'
     grouped[normalized].push(p)
   })
 
-  // Filter by search + difficulty
   const allFiltered = Object.entries(grouped)
     .filter(
       ([difficulty]) =>
@@ -39,20 +38,21 @@ const SolvedProblems = ({ problems, onProblemClick }) => {
       list.filter((p) => p.title.toLowerCase().includes(search.toLowerCase()))
     )
 
-  // Pagination
   const total = allFiltered.length
   const paginated = allFiltered.slice(
     (currentPage - 1) * problemsPerPage,
     currentPage * problemsPerPage
   )
 
+  const difficulties = ['All', 'Easy', 'Medium', 'Hard']
+
   return (
-    <div className="bg-[#111] p-4 rounded-xl border border-[#222] mt-6">
+    <div className="bg-[#111] p-4 rounded-xl border border-[#222] mt-6 relative">
       <div className="text-[#0FA] font-semibold text-sm mb-2">
         Problems Solved
       </div>
 
-      <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-4 relative">
         <input
           type="text"
           placeholder="Search problems..."
@@ -64,19 +64,33 @@ const SolvedProblems = ({ problems, onProblemClick }) => {
           className="flex-1 px-3 py-2 bg-[#1a1a1a] text-white border border-[#333] rounded focus:outline-none"
         />
 
-        <select
-          value={selectedDifficulty}
-          onChange={(e) => {
-            setSelectedDifficulty(e.target.value)
-            setCurrentPage(1)
-          }}
-          className="px-3 py-2 bg-[#1a1a1a] text-white border border-[#333] rounded"
-        >
-          <option value="All">All</option>
-          <option value="Easy">Easy</option>
-          <option value="Medium">Medium</option>
-          <option value="Hard">Hard</option>
-        </select>
+        {/* Difficulty Dropdown */}
+        <div className="relative">
+          <button
+            onClick={() => setShowDifficultyDropdown((prev) => !prev)}
+            className="px-3 py-2 bg-[#1a1a1a] text-white border border-[#333] rounded text-left w-40 cursor-pointer"
+          >
+            {selectedDifficulty}
+          </button>
+
+          {showDifficultyDropdown && (
+            <div className="absolute mt-2 w-40 bg-[#111] border border-[#333] rounded-lg shadow-xl z-50 cursor-pointer">
+              {difficulties.map((d) => (
+                <button
+                  key={d}
+                  onClick={() => {
+                    setSelectedDifficulty(d)
+                    setShowDifficultyDropdown(false)
+                    setCurrentPage(1)
+                  }}
+                  className="block w-full px-4 py-2 text-left text-sm hover:bg-[#222] cursor-pointer"
+                >
+                  {d}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {paginated.length === 0 ? (

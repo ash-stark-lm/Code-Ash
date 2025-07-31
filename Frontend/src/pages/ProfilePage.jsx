@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import axiosClient from '../utils/axiosClient.js'
 import { useNavigate } from 'react-router'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import SolvedProblems from '../components/SolvedProblem.jsx'
 import Heatmap from '../components/HeatMap.jsx'
 import { PieChart, Pie, Cell, Tooltip } from 'recharts'
@@ -28,8 +28,10 @@ const ProfilePage = () => {
 
   const navigate = useNavigate()
   const dispatch = useDispatch()
+  const userId = useSelector((state) => state.auth.user?._id)
 
   useEffect(() => {
+    if (!userId) return // wait until Redux has the userId
     const fetchUser = async () => {
       setLoading(true)
       try {
@@ -39,7 +41,7 @@ const ProfilePage = () => {
         const [solvedRes, acceptedSubmissionsRes, totalRes] = await Promise.all(
           [
             axiosClient.get('/problem/user'),
-            axiosClient.get(`/problem/accepted-submissions/${user._id}`),
+            axiosClient.get(`/problem/accepted-submissions/${userId}`),
             axiosClient.get('/problem?page=1&limit=1'),
           ]
         )
@@ -53,7 +55,7 @@ const ProfilePage = () => {
         const calculateStreaks = (submissions) => {
           const dateSet = new Set()
           submissions.forEach((sub) => {
-            const date = new Date(sub.createdAt).toISOString().split('T')[0]
+            const date = new Date(sub.solvedAt).toISOString().split('T')[0]
             dateSet.add(date)
           })
 
@@ -131,14 +133,8 @@ const ProfilePage = () => {
       await axiosClient.patch('/auth/user/update', { [field]: formData[field] })
       const userRes = await axiosClient.get('/auth/user/profile')
       const updatedUser = userRes.data
-      setUser((prev) => ({
-        ...prev,
-        [field]: updatedUser[field],
-      }))
-      setFormData((prev) => ({
-        ...prev,
-        [field]: updatedUser[field],
-      }))
+      setUser((prev) => ({ ...prev, [field]: updatedUser[field] }))
+      setFormData((prev) => ({ ...prev, [field]: updatedUser[field] }))
       if (field === 'age') setIsEditingAge(false)
       if (field === 'gender') setIsEditingGender(false)
     } catch (err) {
@@ -153,11 +149,7 @@ const ProfilePage = () => {
     try {
       await dispatch(deleteAccount()).unwrap()
       toast.success('Account deleted successfully')
-
-      // Add delay to allow state to reset before redirecting
-      setTimeout(() => {
-        navigate('/signup', { replace: true })
-      }, 400)
+      setTimeout(() => navigate('/signup', { replace: true }), 400)
     } catch (error) {
       toast.error(error || 'Failed to delete account')
     } finally {
@@ -182,7 +174,7 @@ const ProfilePage = () => {
 
   return (
     <motion.div
-      className="p-6 md:p-10 text-white bg-[#111] min-h-screen relative"
+      className="p-4 sm:p-6 md:p-10 text-white bg-[#111] min-h-screen relative"
       initial={{ opacity: 0, y: 40 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: 'easeOut' }}
@@ -192,21 +184,21 @@ const ProfilePage = () => {
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7 }}
-        className="text-center max-w-4xl mx-auto mb-10 relative"
+        className="text-center max-w-4xl mx-auto mb-10 px-2 relative"
       >
         <button
           onClick={() => navigate(-1)}
-          className="absolute right-0 top-0 bg-[#0FA] text-black px-5 py-2 rounded-lg font-semibold hover:scale-105 hover:shadow-[0_0_20px_#0FA] transition cursor-pointer"
+          className="absolute right-2 top-2 sm:right-4 sm:top-4 bg-[#0FA] text-black px-3 py-1 sm:px-5 sm:py-2 rounded-lg font-semibold hover:scale-105 hover:shadow-[0_0_20px_#0FA] transition"
         >
-          <ArrowLeft className="w-5 h-5" />
+          <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
         </button>
-        <h1 className="text-5xl md:text-6xl font-bold leading-tight text-center">
+        <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold leading-snug sm:leading-tight">
           Welcome,{' '}
           <span className="text-[#0FA]">
             {user.name.charAt(0).toUpperCase() + user.name.slice(1)}
           </span>
           <br />
-          <span className="text-xl md:text-2xl font-medium flex items-center justify-center gap-2 mt-2">
+          <span className="text-sm sm:text-base md:text-xl font-medium flex flex-col sm:flex-row items-center justify-center gap-2 mt-2">
             Thanks for being an active user of{' '}
             <span>
               Code<span className="text-[#0FA]">Ash</span>
@@ -215,30 +207,25 @@ const ProfilePage = () => {
         </h1>
       </motion.div>
 
-      <div className="min-h-screen bg-[#0a0a0a] text-white p-6 font-inter ">
-        {/* Avatar and Info */}
-
-        <div className="flex justify-between items-start">
-          {/* Profile Info */}
+      <div className="bg-[#0a0a0a] text-white px-2 sm:px-6 pb-10 font-inter pt-5">
+        <div className="flex flex-col md:flex-row justify-between items-start gap-6">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="flex items-center space-x-6"
+            className="flex flex-col sm:flex-row items-center sm:items-start gap-4"
           >
-            <div className="w-28 h-28 rounded-full bg-[#2a2a2a] text-5xl flex items-center justify-center font-bold border-2 border-[#333]">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-full bg-[#2a2a2a] text-3xl sm:text-4xl md:text-5xl flex items-center justify-center font-bold border-2 border-[#333]">
               {user.name?.charAt(0).toUpperCase()}
             </div>
-            <div>
-              <h1 className="text-3xl font-bold text-white">
+            <div className="text-center sm:text-left">
+              <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-white">
                 {user.name.charAt(0).toUpperCase() + user.name.slice(1)}
               </h1>
-              <div className="text-[#b78bfa] text-lg capitalize">
+              <div className="text-[#b78bfa] text-sm sm:text-base capitalize">
                 {user.role}
               </div>
-
-              <div className="flex items-center flex-wrap gap-4 mt-2 text-sm text-[#aaa]">
-                {/* Age */}
+              <div className="flex flex-col sm:flex-row flex-wrap gap-2 mt-2 text-sm text-[#aaa] items-center sm:items-start">
                 <div className="flex items-center gap-1">
                   👤 Age:
                   {isEditingAge ? (
@@ -249,7 +236,7 @@ const ProfilePage = () => {
                         onChange={(e) =>
                           setFormData({ ...formData, age: e.target.value })
                         }
-                        className="bg-[#1a1a1a] text-white px-2 py-0.5 border border-[#333] rounded w-16 ml-1"
+                        className="bg-[#1a1a1a] text-white px-2 py-1 border border-[#333] rounded w-20 ml-1"
                       />
                       <button
                         type="button"
@@ -272,8 +259,6 @@ const ProfilePage = () => {
                     </>
                   )}
                 </div>
-
-                {/* Gender */}
                 <div className="flex items-center gap-1">
                   ⚥ Gender:
                   {isEditingGender ? (
@@ -283,7 +268,7 @@ const ProfilePage = () => {
                         onChange={(e) =>
                           setFormData({ ...formData, gender: e.target.value })
                         }
-                        className="bg-[#1a1a1a] text-white px-2 py-0.5 border border-[#333] rounded ml-1"
+                        className="bg-[#1a1a1a] text-white px-2 py-1 border border-[#333] rounded ml-1"
                       >
                         <option value="">--</option>
                         <option value="male">Male</option>
@@ -315,18 +300,18 @@ const ProfilePage = () => {
             </div>
           </motion.div>
 
-          {/* Delete Button */}
-          <button
-            onClick={() => setShowModal(true)}
-            className="bg-red-600 text-white px-5 py-2 rounded-lg font-semibold hover:scale-105 hover:shadow-[0_0_20px_#F00] transition cursor-pointer"
-          >
-            Delete Account
-          </button>
+          <div className="w-full sm:w-auto mt-4 sm:mt-0 flex justify-center">
+            <button
+              onClick={() => setShowModal(true)}
+              className="bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:scale-105 hover:shadow-[0_0_20px_#F00] transition w-full sm:w-auto"
+            >
+              Delete Account
+            </button>
+          </div>
         </div>
 
-        {/* Cards */}
         <motion.div
-          className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4"
+          className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-4"
           initial="hidden"
           animate="visible"
           variants={{
@@ -334,7 +319,6 @@ const ProfilePage = () => {
             visible: { transition: { staggerChildren: 0.2 } },
           }}
         >
-          {/* Solved Chart */}
           <motion.div
             variants={{
               hidden: { opacity: 0, y: 20 },
@@ -346,38 +330,39 @@ const ProfilePage = () => {
             <div className="text-[#0FA] font-semibold text-sm mb-1">
               Problems Solved
             </div>
-            <div className="text-2xl font-bold">{solvedTotal}</div>
+            <div className="text-xl sm:text-2xl font-bold">{solvedTotal}</div>
             <div className="text-sm text-[#888] mb-4">
               Out of {totalProblems} total problems
             </div>
-            <PieChart width={280} height={240}>
-              <Pie
-                dataKey="value"
-                data={pieData}
-                cx="50%"
-                cy="50%"
-                outerRadius={80}
-                label={({ percent }) =>
-                  percent > 0 ? `${(percent * 100).toFixed(0)}%` : ''
-                }
-              >
-                {pieData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={PIE_COLORS[index]} />
-                ))}
-              </Pie>
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: '#2a2a2a',
-                  border: '1px solid #444',
-                  borderRadius: '6px',
-                  color: '#f1f5f9',
-                  fontSize: '14px',
-                }}
-              />
-            </PieChart>
+            <div className="overflow-x-auto">
+              <PieChart width={260} height={220}>
+                <Pie
+                  dataKey="value"
+                  data={pieData}
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={80}
+                  label={({ percent }) =>
+                    percent > 0 ? `${(percent * 100).toFixed(0)}%` : ''
+                  }
+                >
+                  {pieData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={PIE_COLORS[index]} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#2a2a2a',
+                    border: '1px solid #444',
+                    borderRadius: '6px',
+                    color: '#f1f5f9',
+                    fontSize: '14px',
+                  }}
+                />
+              </PieChart>
+            </div>
           </motion.div>
 
-          {/* Streaks */}
           <motion.div
             variants={{
               hidden: { opacity: 0, y: 20 },
@@ -390,7 +375,6 @@ const ProfilePage = () => {
           </motion.div>
         </motion.div>
 
-        {/* Solved Problems */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -402,7 +386,6 @@ const ProfilePage = () => {
           />
         </motion.div>
 
-        {/* Heatmap */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -411,6 +394,7 @@ const ProfilePage = () => {
           <Heatmap submissions={submissions} />
         </motion.div>
       </div>
+
       {showModal && (
         <DeleteAccountModal
           onClose={() => setShowModal(false)}

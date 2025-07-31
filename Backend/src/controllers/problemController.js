@@ -183,32 +183,43 @@ const allSolvedProblemsByUser = async (req, res) => {
   return res.status(200).send(user.problemSolved)
 }
 
-// GET /problem/submissions/:userId
+// GET /problem/submissions/:userIdimport Submission from '../models/submission.js'
+
 const getAcceptedSubmissions = async (req, res) => {
   try {
-    const userId = req.result._id // ✅ Secure: taken from JWT auth middleware
+    const userId = req.result._id
 
+    // 1) fetch all accepted submissions, newest first
     const submissions = await Submission.find({
       userId,
       status: 'accepted',
-    }).populate({
-      path: 'problemId',
-      select: '_id title difficulty tags',
     })
+      .sort({ createdAt: -1 })
+      .populate({
+        path: 'problemId',
+        select: '_id title description difficulty tags',
+      })
 
-    const result = submissions
-      .filter((s) => s.problemId) // ⛔ safeguard if problemId got deleted
-      .map((s) => ({
-        _id: s.problemId._id,
-        title: s.problemId.title,
-        difficulty: s.problemId.difficulty,
-        tags: s.problemId.tags,
-        createdAt: s.createdAt, // from Submission's timestamps
-      }))
+    // 2) dedupe by problem
+    const uniqueSolved = new Map()
+    for (const sub of submissions) {
+      const p = sub.problemId
+      if (p && !uniqueSolved.has(p._id.toString())) {
+        uniqueSolved.set(p._id.toString(), {
+          _id: p._id,
+          title: p.title,
+          description: p.description,
+          difficulty: p.difficulty,
+          tags: p.tags,
+          solvedAt: sub.createdAt,
+        })
+      }
+    }
 
-    return res.status(200).json(result)
+    // 3) return as an array
+    return res.status(200).json([...uniqueSolved.values()])
   } catch (error) {
-    console.error('❌ Error fetching accepted submissions:', error)
+    console.error('❌ Error in getAcceptedSubmissions:', error)
     return res.status(500).json({ error: 'Internal Server Error' })
   }
 }

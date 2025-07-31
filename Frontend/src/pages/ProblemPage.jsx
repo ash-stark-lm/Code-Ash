@@ -159,10 +159,11 @@ export default function ProblemPage() {
   if (!problem) return <LoadingOverlay />
 
   return (
-    <div className="min-h-screen bg-[#1a1c1e] text-white font-sans px-6 py-4">
+    <div className="min-h-screen bg-[#1a1c1e] text-white font-sans px-4 sm:px-6 py-4">
       {submitting && <LoadingOverlay />}
+
       {activeTab === 'Herby' && (
-        <div className="fixed inset-0 z-50 bg-[#0d0d0d]">
+        <div className="fixed inset-0 z-50 bg-[#0d0d0d] overflow-auto">
           <ChatWithAI problem={problem} />
           <button
             onClick={() => setActiveTab('Description')}
@@ -173,10 +174,10 @@ export default function ProblemPage() {
         </div>
       )}
 
-      <div className="flex justify-center gap-4 mb-6">
+      <div className="flex flex-wrap justify-center gap-3 sm:gap-4 mb-6">
         <button
           onClick={handleRunCode}
-          className="bg-white/10 border border-white/20 text-sm px-6 py-2 rounded-md hover:bg-white/20 flex items-center justify-center w-[90px]"
+          className="bg-white/10 border border-white/20 text-sm px-6 py-2 rounded-md hover:bg-white/20 flex items-center justify-center min-w-[90px]"
         >
           {running ? <span className="animate-spin">⏳</span> : 'Run'}
         </button>
@@ -189,9 +190,9 @@ export default function ProblemPage() {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div className="lg:col-span-5 bg-[#1F2123] rounded-xl p-6 border border-[#2A2D2E] space-y-4">
-          <div className="flex gap-3 border-b border-[#2A2D2E] pb-2 mb-4">
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+        <div className="xl:col-span-5 bg-[#1F2123] rounded-xl p-4 sm:p-6 border border-[#2A2D2E] space-y-4">
+          <div className="flex flex-wrap gap-2 border-b border-[#2A2D2E] pb-2 mb-4">
             {[
               'Description',
               'Editorial',
@@ -202,7 +203,7 @@ export default function ProblemPage() {
               <button
                 key={tab}
                 onClick={() => handleTabClick(tab)}
-                className={`text-sm font-medium px-3 py-1.5 rounded-md transition cursor-pointer ${
+                className={`text-sm font-medium px-3 py-1.5 rounded-md transition cursor-pointer whitespace-nowrap ${
                   activeTab === tab
                     ? 'bg-[#2A2D2E] text-white'
                     : 'text-gray-400 hover:text-white hover:bg-white/5'
@@ -215,13 +216,15 @@ export default function ProblemPage() {
 
           {activeTab === 'Description' && (
             <>
-              <h1 className="text-2xl font-bold">{problem.title}</h1>
-              <p className="text-sm text-gray-400">
+              <h1 className="text-xl sm:text-2xl font-bold break-words">
+                {problem.title}
+              </h1>
+              <p className="text-sm text-gray-400 break-words">
                 {problem.difficulty.charAt(0).toUpperCase() +
                   problem.difficulty.slice(1)}{' '}
                 • {problem.tags.join(', ')}
               </p>
-              <p className="text-sm text-gray-300 whitespace-pre-line">
+              <p className="text-sm text-gray-300 whitespace-pre-line break-words">
                 {problem.description}
               </p>
               {problem.visibleTestCases.length > 0 && (
@@ -229,14 +232,14 @@ export default function ProblemPage() {
                   <p className="text-white font-medium mb-2">Example:</p>
                   {problem.visibleTestCases.map((test, idx) => (
                     <div key={idx} className="mb-3">
-                      <p className="text-sm text-gray-300">
+                      <p className="text-sm text-gray-300 break-words">
                         Input: {test.input}
                       </p>
-                      <p className="text-sm text-gray-300">
+                      <p className="text-sm text-gray-300 break-words">
                         Output: {test.output}
                       </p>
                       {test.explanation && (
-                        <p className="text-sm text-gray-300">
+                        <p className="text-sm text-gray-300 break-words">
                           Explanation: {test.explanation}
                         </p>
                       )}
@@ -275,6 +278,7 @@ export default function ProblemPage() {
           {activeTab === 'Run' && (
             <RunResultPanel runResults={runResults} running={running} />
           )}
+
           {activeTab === 'Solutions' && (
             <SolutionsTab
               referenceSolution={problem.referenceSolution}
@@ -283,10 +287,10 @@ export default function ProblemPage() {
           )}
         </div>
 
-        <div className="lg:col-span-7 flex flex-col gap-4">
-          <div className="bg-[#1F2123] rounded-xl border border-[#2A2D2E] flex flex-col flex-grow">
+        <div className="xl:col-span-7 flex flex-col gap-4 min-w-0">
+          <div className="bg-[#1F2123] rounded-xl border border-[#2A2D2E] flex flex-col flex-grow min-w-0">
             <div
-              className="flex items-center gap-2 px-4 py-2 border-b border-[#2A2D2E]"
+              className="flex flex-wrap sm:flex-nowrap items-center gap-2 px-4 py-2 border-b border-[#2A2D2E]"
               ref={dropdownRef}
             >
               <span className="w-3 h-3 bg-red-500 rounded-full" />
@@ -298,7 +302,8 @@ export default function ProblemPage() {
               >
                 <RotateCcw size={18} />
               </button>
-              <div className="ml-auto flex items-center gap-3">
+              <div className="ml-auto flex flex-wrap items-center gap-3">
+                {/* Font Dropdown */}
                 <div className="relative">
                   <button
                     onClick={() =>
@@ -325,7 +330,7 @@ export default function ProblemPage() {
                     </div>
                   )}
                 </div>
-
+                {/* Lang Dropdown */}
                 <div className="relative">
                   <button
                     onClick={() =>
@@ -354,6 +359,7 @@ export default function ProblemPage() {
               </div>
             </div>
 
+            {/* Editor */}
             <div
               className={`relative rounded-xl overflow-hidden border ${
                 viewingSubmission
@@ -364,7 +370,7 @@ export default function ProblemPage() {
               }`}
             >
               {viewingSubmission && (
-                <div className="absolute top-3 right-7 mt-5 flex items-center gap-2 z-10">
+                <div className="absolute top-3 right-4 sm:right-7 mt-5 flex flex-wrap items-center gap-2 z-10">
                   <span
                     className={`text-xs font-semibold px-2 py-1 rounded-full ${
                       viewingSubmission.passed
@@ -400,19 +406,26 @@ export default function ProblemPage() {
             </div>
           </div>
 
+          {/* Run Results + Error */}
           {runResults && (
-            <div className="text-sm text-white bg-[#2A2D2E] p-4 rounded-lg border border-[#3A3D3E]">
+            <div className="text-sm text-white bg-[#2A2D2E] p-4 rounded-lg border border-[#3A3D3E] w-full">
               <p>
                 🧪 Passed {runResults.passed} / {runResults.total} test cases
               </p>
+
               {runResults.error && (
-                <p className="text-red-400 mt-2">❌ {runResults.error}</p>
+                <div className="mt-4 w-[500px] max-w-full max-h-[300px] overflow-y-auto rounded-lg border border-[#444] bg-[#1a1a1a] p-3">
+                  <div className="text-xs text-red-400 whitespace-pre-wrap break-words">
+                    {runResults.error}
+                  </div>
+                </div>
               )}
             </div>
           )}
 
+          {/* Testcases Viewer */}
           <div className="bg-[#1F2123] rounded-xl border border-[#2A2D2E]">
-            <div className="px-4 py-3 border-b border-[#2A2D2E] flex items-center gap-4">
+            <div className="px-4 py-3 border-b border-[#2A2D2E] flex items-center gap-4 flex-wrap">
               <p className="text-white font-semibold text-base">Testcases</p>
               <div className="flex gap-2 overflow-x-auto">
                 {problem.visibleTestCases.map((_, idx) => (
