@@ -19,8 +19,16 @@ const HomePage = function () {
   const { user } = useSelector((state) => state.auth)
   const [selectedLang, setSelectedLang] = useState('cpp')
   const [isProfileOpen, setIsProfileOpen] = useState(false)
-
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const profileRef = useRef()
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen)
+  }
+
+  const closeMobileMenu = () => {
+    setIsMobileMenuOpen(false)
+  }
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -49,81 +57,137 @@ const HomePage = function () {
     <div className="min-h-screen bg-[#0e0e0e] text-white font-sans overflow-x-hidden">
       <GridGlow />
       <nav className="relative z-50 flex flex-wrap justify-between items-center px-4 sm:px-6 md:px-8 py-4 border-b border-[#1f1f1f] bg-[#0e0e0e]/80 backdrop-blur">
+        {/* Logo/Brand */}
         <div className="flex items-center gap-2 text-xl sm:text-2xl font-semibold">
           <Terminal className="text-[#0FA] drop-shadow-lg" size={24} />
           <span>
             Code<span className="text-[#0FA]">Ash</span>
           </span>
         </div>
-        <div className="flex items-center gap-6 sm:gap-10 text-sm sm:text-base text-gray-300">
-          <Link to="/problems" className="hover:text-white">
+
+        {/* Mobile Menu Button (Hamburger) - Only shows on small screens */}
+        <div className="md:hidden">
+          <button
+            className="p-2 rounded-full hover:bg-white/10 transition cursor-pointer"
+            onClick={toggleMobileMenu} // You'll need to implement this state toggle
+          >
+            <Menu className="text-white" size={24} />
+          </button>
+        </div>
+
+        {/* Navigation Links - Hidden on mobile, shown on medium+ screens */}
+        <div className="hidden md:flex items-center gap-6 lg:gap-10 text-sm sm:text-base text-gray-300">
+          <Link to="/problems" className="hover:text-white transition">
             Problems
           </Link>
-          <Link to="/visualizer" className="hover:text-white">
+          <Link to="/visualizer" className="hover:text-white transition">
             DSA Visualizer
           </Link>
         </div>
 
-        <div ref={profileRef} className="relative">
-          <button
-            className="p-2 rounded-full hover:bg-white/10 transition cursor-pointer"
-            onClick={() => setIsProfileOpen((prev) => !prev)}
-          >
+        {/* User Profile - Hidden on mobile, shown on medium+ screens */}
+        <div className="hidden md:block relative group">
+          <button className="p-2 rounded-full hover:bg-white/10 transition cursor-pointer">
             <User className="text-white" />
           </button>
-
           {user?.firstName && (
             <div className="mt-1 text-xs text-white/70 text-center">
               {user.firstName.toUpperCase()}
             </div>
           )}
 
-          {isProfileOpen && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.2 }}
-              className="absolute right-0 mt-2 w-44 bg-[#111] border border-[#333] rounded-lg shadow-xl z-50"
-              style={{ minHeight: '120px' }}
+          <div className="absolute right-0 mt-2 w-44 bg-[#111] border border-[#333] rounded-lg shadow-xl z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition duration-200">
+            {user?.role === 'admin' && (
+              <button
+                onClick={() => navigate('/admin')}
+                className="flex items-center w-full px-4 py-2 text-sm text-white hover:bg-[#222] transition cursor-pointer"
+              >
+                <Settings className="w-4 h-4 mr-2" />
+                Admin Panel
+              </button>
+            )}
+            <button
+              onClick={handleProfile}
+              className="flex items-center w-full px-4 py-2 text-sm text-white hover:bg-[#222] transition cursor-pointer"
             >
-              {user?.role === 'admin' && (
+              <UserPen className="w-4 h-4 mr-2" />
+              View Profile
+            </button>
+
+            <button
+              onClick={handleLogout}
+              className="flex items-center w-full px-4 py-2 text-sm text-white hover:bg-[#222] transition cursor-pointer"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Logout
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Menu - Only shows when toggled */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden absolute top-full left-0 right-0 bg-[#0e0e0e] border-t border-[#1f1f1f] px-4 py-3">
+            <div className="flex flex-col space-y-4">
+              <Link
+                to="/problems"
+                className="text-gray-300 hover:text-white transition py-2"
+                onClick={closeMobileMenu} // Close menu when a link is clicked
+              >
+                Problems
+              </Link>
+              <Link
+                to="/visualizer"
+                className="text-gray-300 hover:text-white transition py-2"
+                onClick={closeMobileMenu}
+              >
+                DSA Visualizer
+              </Link>
+
+              {/* Mobile User Menu */}
+              <div className="pt-2 border-t border-[#1f1f1f]">
+                {user?.firstName && (
+                  <div className="text-xs text-white/70 mb-2">
+                    Logged in as: {user.firstName.toUpperCase()}
+                  </div>
+                )}
+
+                {user?.role === 'admin' && (
+                  <button
+                    onClick={() => {
+                      navigate('/admin')
+                      closeMobileMenu()
+                    }}
+                    className="flex items-center w-full px-2 py-3 text-sm text-white hover:bg-[#222] transition cursor-pointer"
+                  >
+                    <Settings className="w-4 h-4 mr-2" />
+                    Admin Panel
+                  </button>
+                )}
                 <button
                   onClick={() => {
-                    setIsProfileOpen(false)
-                    navigate('/admin')
+                    handleProfile()
+                    closeMobileMenu()
                   }}
-                  className="flex items-center w-full px-4 py-2 text-sm text-white hover:bg-[#222] transition"
+                  className="flex items-center w-full px-2 py-3 text-sm text-white hover:bg-[#222] transition cursor-pointer"
                 >
-                  <Settings className="w-4 h-4 mr-2" />
-                  Admin Panel
+                  <UserPen className="w-4 h-4 mr-2" />
+                  View Profile
                 </button>
-              )}
 
-              <button
-                onClick={() => {
-                  setIsProfileOpen(false)
-                  handleProfile()
-                }}
-                className="flex items-center w-full px-4 py-2 text-sm text-white hover:bg-[#222] transition"
-              >
-                <UserPen className="w-4 h-4 mr-2" />
-                View Profile
-              </button>
-
-              <button
-                onClick={() => {
-                  setIsProfileOpen(false)
-                  handleLogout()
-                }}
-                className="flex items-center w-full px-4 py-2 text-sm text-white hover:bg-[#222] transition"
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                Logout
-              </button>
-            </motion.div>
-          )}
-        </div>
+                <button
+                  onClick={() => {
+                    handleLogout()
+                    closeMobileMenu()
+                  }}
+                  className="flex items-center w-full px-2 py-3 text-sm text-white hover:bg-[#222] transition cursor-pointer"
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Logout
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </nav>
 
       <SplashCursor />

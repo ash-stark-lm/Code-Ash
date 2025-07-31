@@ -1,17 +1,23 @@
 'use client'
 import { useEffect, useRef } from 'react'
 
+const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+
+const SIM_RESOLUTION = isMobile ? 64 : 128
+const DYE_RESOLUTION = isMobile ? 512 : 1440
+const CAPTURE_RESOLUTION = isMobile ? 256 : 512
+
 export default function SplashCursor({
-  SIM_RESOLUTION = 128,
-  DYE_RESOLUTION = 1440,
-  CAPTURE_RESOLUTION = 512,
-  DENSITY_DISSIPATION = 6.0,
-  VELOCITY_DISSIPATION = 4.0,
+  SIM_RESOLUTION = isMobile ? 64 : 128,
+  DYE_RESOLUTION = isMobile ? 512 : 1440,
+  CAPTURE_RESOLUTION = isMobile ? 256 : 512,
+  DENSITY_DISSIPATION = isMobile ? 8.0 : 6.0,
+  VELOCITY_DISSIPATION = isMobile ? 5.0 : 4.0,
   PRESSURE = 0.1,
-  PRESSURE_ITERATIONS = 20,
+  PRESSURE_ITERATIONS = isMobile ? 15 : 20,
   CURL = 3,
-  SPLAT_RADIUS = 0.15,
-  SPLAT_FORCE = 3000,
+  SPLAT_RADIUS = isMobile ? 0.2 : 0.15,
+  SPLAT_FORCE = isMobile ? 1500 : 3000,
   SHADING = true,
   COLOR_UPDATE_SPEED = 5,
   BACK_COLOR = { r: 0.5, g: 0, b: 0 },
@@ -791,13 +797,26 @@ export default function SplashCursor({
     let lastUpdateTime = Date.now()
     let colorUpdateTimer = 0.0
 
-    function updateFrame() {
+    const FRAME_THROTTLE = isMobile ? 1000 / 30 : 0 // ~30 FPS for mobile, unlimited for desktop
+
+    let lastFrameTime = 0
+
+    function updateFrame(timestamp) {
+      if (FRAME_THROTTLE) {
+        if (timestamp - lastFrameTime < FRAME_THROTTLE) {
+          requestAnimationFrame(updateFrame)
+          return
+        }
+        lastFrameTime = timestamp
+      }
+
       const dt = calcDeltaTime()
       if (resizeCanvas()) initFramebuffers()
       updateColors(dt)
       applyInputs()
       step(dt)
       render(null)
+
       requestAnimationFrame(updateFrame)
     }
 
