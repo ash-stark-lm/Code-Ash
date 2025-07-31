@@ -135,9 +135,8 @@ const HomePage = function () {
               ⚡ Visualize algorithms with step-by-step animations like never
               before
             </li>
-            <li>🧠 Instant AI-powered hints & solutions</li>
             <li>🤖 AI Chatbot for debugging and problem solving</li>
-            <li>🔒 Seamless Google Authentication</li>
+
             <li>💸 100% Free — No paywalls, no subscriptions, ever</li>
             <li>🌐 Fully Open Source — Contribute on GitHub!</li>
           </ul>
