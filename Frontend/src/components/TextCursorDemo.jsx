@@ -2,7 +2,7 @@ import TextCursor from './CursorAnimation'
 
 const TextCursorDemo = () => {
   return (
-    <div className="min-h-screen bg-black text-white flex items-center justify-center relative">
+    <div className="fixed top-0 left-0 w-full h-full pointer-events-none z-[9999]">
       <TextCursor
         text="🖱️"
         delay={0.02}
