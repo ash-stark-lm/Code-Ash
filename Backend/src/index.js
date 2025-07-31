@@ -17,9 +17,11 @@ const PORT = process.env.PORT || 3000
 
 app.use(
   cors({
-    origin: [process.env.CORS_ORIGIN, process.env.CORS_ORIGIN_TEST].filter(
-      Boolean
-    ),
+    origin: [
+      process.env.CORS_ORIGIN,
+      process.env.CORS_ORIGIN_TEST,
+      process.env.CORS_ORIGIN_TEST2,
+    ].filter(Boolean),
     credentials: true, // allow cookies / headers
   })
 )

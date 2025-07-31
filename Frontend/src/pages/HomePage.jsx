@@ -8,7 +8,7 @@ import { Link } from 'react-router'
 import LoadingOverlay from '../components/LoadingOverlay'
 
 import GridGlow from '../components/GridGlow'
-import { SplashCursor } from '../components/SplashCursor'
+import { TextCursorDemo } from '../components/TextCursorDemo'
 
 const TypingCodeBlock = lazy(() => import('../components/TypingCodeBlock'))
 const HerbyShowcase = lazy(() => import('../components/HerbyShowcase'))
@@ -190,7 +190,7 @@ const HomePage = function () {
         )}
       </nav>
 
-      <SplashCursor />
+      <TextCursorDemo />
 
       <section className="relative grid grid-cols-1 lg:grid-cols-2 gap-10 items-center px-4 sm:px-6 md:px-10 py-12 bg-[#0e0e0e]">
         <div className="absolute inset-0 -z-10 pointer-events-none">
