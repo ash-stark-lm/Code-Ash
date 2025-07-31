@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, lazy, Suspense } from 'react'
-import { User, Terminal, Settings, LogOut, UserPen } from 'lucide-react'
+import { User, Terminal, Settings, LogOut, UserPen, Menu } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { logoutUser } from '../authSlice'
 import { useDispatch, useSelector } from 'react-redux'

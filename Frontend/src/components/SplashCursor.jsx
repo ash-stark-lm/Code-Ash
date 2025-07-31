@@ -2,27 +2,36 @@
 import { useEffect, useRef } from 'react'
 
 const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+// At the top of your component
 
-const SIM_RESOLUTION = isMobile ? 64 : 128
-const DYE_RESOLUTION = isMobile ? 512 : 1440
-const CAPTURE_RESOLUTION = isMobile ? 256 : 512
+// Adjust these values for mobile
+const MOBILE_SETTINGS = {
+  SIM_RESOLUTION: 64,
+  DYE_RESOLUTION: 512,
+  CAPTURE_RESOLUTION: 256,
+  DENSITY_DISSIPATION: 8.0,
+  VELOCITY_DISSIPATION: 5.0,
+  PRESSURE_ITERATIONS: 15,
+  SPLAT_RADIUS: 0.2,
+  SPLAT_FORCE: 1500,
+  FRAME_THROTTLE: 1000 / 30, // ~30 FPS
+}
 
-export default function SplashCursor({
-  SIM_RESOLUTION = isMobile ? 64 : 128,
-  DYE_RESOLUTION = isMobile ? 512 : 1440,
-  CAPTURE_RESOLUTION = isMobile ? 256 : 512,
-  DENSITY_DISSIPATION = isMobile ? 8.0 : 6.0,
-  VELOCITY_DISSIPATION = isMobile ? 5.0 : 4.0,
-  PRESSURE = 0.1,
-  PRESSURE_ITERATIONS = isMobile ? 15 : 20,
-  CURL = 3,
-  SPLAT_RADIUS = isMobile ? 0.2 : 0.15,
-  SPLAT_FORCE = isMobile ? 1500 : 3000,
-  SHADING = true,
-  COLOR_UPDATE_SPEED = 5,
-  BACK_COLOR = { r: 0.5, g: 0, b: 0 },
-  TRANSPARENT = true,
-}) {
+const DESKTOP_SETTINGS = {
+  SIM_RESOLUTION: 128,
+  DYE_RESOLUTION: 1440,
+  CAPTURE_RESOLUTION: 512,
+  DENSITY_DISSIPATION: 6.0,
+  VELOCITY_DISSIPATION: 4.0,
+  PRESSURE_ITERATIONS: 20,
+  SPLAT_RADIUS: 0.15,
+  SPLAT_FORCE: 3000,
+  FRAME_THROTTLE: 0, // No throttle
+}
+
+const config = isMobile ? MOBILE_SETTINGS : DESKTOP_SETTINGS
+
+export default function SplashCursor({ config }) {
   const canvasRef = useRef(null)
 
   useEffect(() => {
