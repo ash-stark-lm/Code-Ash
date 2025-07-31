@@ -66,7 +66,7 @@ const HomePage = function () {
         </div>
 
         {/* Mobile Menu Button (Hamburger) - Only shows on small screens */}
-        <div className="md:hidden">
+        <div className="lg:hidden">
           <button
             className="p-2 rounded-full hover:bg-white/10 transition cursor-pointer"
             onClick={toggleMobileMenu} // You'll need to implement this state toggle
