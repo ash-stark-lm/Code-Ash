@@ -1,13 +1,7 @@
-import OpenAI from 'openai'
+import { GoogleGenAI } from '@google/genai'
+import dotenv from 'dotenv' // For loading environment variables
 
-const openai = new OpenAI({
-  baseURL: 'https://openrouter.ai/api/v1',
-  apiKey: process.env.OPENROUTER_API_KEY,
-  defaultHeaders: {
-    'HTTP-Referer': 'https://codeash.site', // or your production site
-    'X-Title': 'CodingPlatform',
-  },
-})
+dotenv.config() // Load environment variables from .env file
 
 const solveDoubt = async (req, res) => {
   try {
@@ -20,7 +14,14 @@ const solveDoubt = async (req, res) => {
       })
     }
 
-    const contextPrompt = `You are Herby — a friendly and highly skilled AI assistant designed to help users with data structures, algorithms, and competitive programming.
+    // Initialize GoogleGenAI with your API key
+    const ai = new GoogleGenAI({
+      apiKey: process.env.GEMINI_API_KEY, // Make sure GEMINI_API_KEY is set in your .env file
+    })
+
+    // The system instruction for Gemini 2.5 models and later should be
+    // set using the 'systemInstruction' property in the generateContent or createChat call.
+    const systemInstruction = `You are Herby — a friendly and highly skilled AI assistant designed to help users with data structures, algorithms, and competitive programming.
 
 ---
 
@@ -106,25 +107,39 @@ You're Herby — a dedicated AI coach for DSA. Always be helpful, kind, and focu
 - Friendly, respectful, focused
 - Never engages in opinions, personal advice, or casual conversations
 - Encourages understanding over memorization
-- Helps users discover logic instead of just handing answers
+- Helps users discover logic instead of just handing answers.`
 
-You are Herby — the coding-only AI. Always helpful within your domain, and respectfully silent outside of it.`
+    // Transform the messages array for Google GenAI.
+    // The Gemini API does not have a separate 'system' role in the same way OpenAI does for chat.
+    // Instead, you use `systemInstruction` for overall persona/rules, and then `user` and `model`
+    // for conversational turns.
+    const history = messages.map((m) => ({
+      role: m.role === 'assistant' ? 'model' : m.role, // Map 'assistant' to 'model'
+      parts: [{ text: m.parts[0].text }],
+    }))
 
-    const completion = await openai.chat.completions.create({
-      model: 'deepseek/deepseek-r1:free',
-      messages: [
-        { role: 'system', content: contextPrompt },
-        ...messages.map((m) => ({
-          role: m.role,
-          content: m.parts[0].text,
-        })),
-      ],
+    // Start a new chat session with the model and system instruction
+    const chat = ai.getGenerativeModel({
+      model: 'gemini-2.5-pro', // Using gemini-1.5-flash which supports system instructions
+      // For older Gemini models like gemini-1.0-pro or gemini-1.5-pro,
+      // you would include the system instruction as the first user message.
+      // But for gemini-1.5-flash and newer, `systemInstruction` is preferred.
+      systemInstruction: systemInstruction,
     })
 
-    return res
-      .status(201)
-      .json({ message: completion.choices[0].message.content })
+    // Send the history to the model
+    const response = await chat.startChat({
+      history: history,
+    })
+
+    // Get the latest message from the history after the model's response
+    const lastMessage = response.last({
+      role: 'model',
+    })
+
+    return res.status(201).json({ message: lastMessage.text })
   } catch (err) {
+    console.error('Error in solveDoubt:', err)
     return res.status(500).json({ message: 'Internal server error' })
   }
 }
